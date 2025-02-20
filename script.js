@@ -35,14 +35,14 @@ $(document).ready(function() {
 
     // typing text animation script
     var typed = new Typed(".typing", {
-        strings: ["Footballer", "Developer", "Videographer", "Editor", "Gamer"],
+        strings: ["Computer Vision", "Natural Language Processing", "Deep Learning", "Reinforcement Learning", "MERN Stack"],
         typeSpeed: 100,
         backSpeed: 60,
         loop: true
     });
 
     var typed = new Typed(".typing-2", {
-        strings: ["Footballer", "Developer", "Videographer", "Editor", "Gamer"],
+        strings: ["Programmer", "UI/UX Designer", "Photo/Video Editor", "Gamer", "Athlete"],
         typeSpeed: 100,
         backSpeed: 60,
         loop: true
@@ -55,6 +55,7 @@ $(document).ready(function() {
         autoplay: true,
         autoplayTimeOut: 2000,
         autoplayHoverPause: true,
+        autoHeight: true,  // Add this line
         responsive: {
             0: {
                 items: 1,
