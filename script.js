@@ -174,6 +174,20 @@ $(document).ready(function() {
     });
 
     // ============================================
+    // ABOUT BOOK TAP SUPPORT (TOUCH DEVICES)
+    // ============================================
+    const aboutBook = document.querySelector('.about .book');
+    if (aboutBook && window.matchMedia('(hover: none)').matches) {
+        const coverSubtitle = aboutBook.querySelector('.cover-subtitle');
+        if (coverSubtitle) {
+            coverSubtitle.textContent = 'Tap to open';
+        }
+        aboutBook.addEventListener('click', function() {
+            aboutBook.classList.toggle('open');
+        });
+    }
+
+    // ============================================
     // PUBLICATION CARD CLICK/TOUCH SUPPORT
     // ============================================
     document.querySelectorAll('.pub-card').forEach(card => {
@@ -241,28 +255,226 @@ $(document).ready(function() {
     }
 
     // ============================================
-    // FLOATING PARTICLES EFFECT
+    // HERO WOW EFFECTS
     // ============================================
-    function createParticles() {
-        const particlesContainer = document.querySelector('.particles-container');
-        if (!particlesContainer) return;
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    const heroSection = document.querySelector('.home');
 
-        for (let i = 0; i < 20; i++) {
-            const particle = document.createElement('div');
-            particle.style.position = 'absolute';
-            particle.style.width = Math.random() * 4 + 2 + 'px';
-            particle.style.height = particle.style.width;
-            particle.style.background = `rgba(99, 102, 241, ${Math.random() * 0.5 + 0.2})`;
-            particle.style.borderRadius = '50%';
-            particle.style.left = Math.random() * 100 + '%';
-            particle.style.top = Math.random() * 100 + '%';
-            particle.style.animation = `float ${Math.random() * 10 + 10}s ease-in-out infinite`;
-            particle.style.animationDelay = Math.random() * 5 + 's';
-            particlesContainer.appendChild(particle);
+    // --- Interactive constellation canvas ---
+    const constellation = document.querySelector('.constellation');
+    if (constellation && heroSection) {
+        const cctx = constellation.getContext('2d');
+        const particleColors = ['99, 102, 241', '139, 92, 246', '236, 72, 153'];
+        const pointer = { x: null, y: null };
+        let particles = [];
+        let cw, ch;
+
+        function sizeConstellation() {
+            const dpr = Math.min(window.devicePixelRatio || 1, 2);
+            cw = heroSection.offsetWidth;
+            ch = heroSection.offsetHeight;
+            constellation.width = cw * dpr;
+            constellation.height = ch * dpr;
+            cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const count = Math.min(Math.floor((cw * ch) / 22000), 80);
+            particles = Array.from({ length: count }, () => ({
+                x: Math.random() * cw,
+                y: Math.random() * ch,
+                vx: (Math.random() - 0.5) * 0.35,
+                vy: (Math.random() - 0.5) * 0.35,
+                r: Math.random() * 1.6 + 0.8,
+                c: particleColors[Math.floor(Math.random() * particleColors.length)]
+            }));
+        }
+
+        function drawConstellation() {
+            cctx.clearRect(0, 0, cw, ch);
+            const linkDist = 120;
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                if (p.x < 0 || p.x > cw) p.vx *= -1;
+                if (p.y < 0 || p.y > ch) p.vy *= -1;
+
+                // gentle repulsion around the pointer
+                if (pointer.x !== null) {
+                    const dx = p.x - pointer.x;
+                    const dy = p.y - pointer.y;
+                    const dist = Math.hypot(dx, dy);
+                    if (dist > 0.1 && dist < 110) {
+                        p.x += (dx / dist) * 0.7;
+                        p.y += (dy / dist) * 0.7;
+                    }
+                }
+
+                cctx.beginPath();
+                cctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                cctx.fillStyle = 'rgba(' + p.c + ', 0.55)';
+                cctx.fill();
+
+                for (let j = i + 1; j < particles.length; j++) {
+                    const q = particles[j];
+                    const dist = Math.hypot(p.x - q.x, p.y - q.y);
+                    if (dist < linkDist) {
+                        cctx.beginPath();
+                        cctx.moveTo(p.x, p.y);
+                        cctx.lineTo(q.x, q.y);
+                        cctx.strokeStyle = 'rgba(99, 102, 241, ' + (0.18 * (1 - dist / linkDist)).toFixed(3) + ')';
+                        cctx.lineWidth = 1;
+                        cctx.stroke();
+                    }
+                }
+
+                if (pointer.x !== null) {
+                    const dist = Math.hypot(p.x - pointer.x, p.y - pointer.y);
+                    if (dist < 170) {
+                        cctx.beginPath();
+                        cctx.moveTo(p.x, p.y);
+                        cctx.lineTo(pointer.x, pointer.y);
+                        cctx.strokeStyle = 'rgba(236, 72, 153, ' + (0.25 * (1 - dist / 170)).toFixed(3) + ')';
+                        cctx.lineWidth = 1;
+                        cctx.stroke();
+                    }
+                }
+            }
+        }
+
+        sizeConstellation();
+
+        if (prefersReduced) {
+            drawConstellation();
+        } else {
+            let rafId = null;
+            const loop = () => {
+                drawConstellation();
+                rafId = requestAnimationFrame(loop);
+            };
+            new IntersectionObserver(entries => {
+                if (entries[0].isIntersecting && rafId === null) {
+                    rafId = requestAnimationFrame(loop);
+                } else if (!entries[0].isIntersecting && rafId !== null) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            }).observe(heroSection);
+
+            heroSection.addEventListener('pointermove', function(e) {
+                const rect = heroSection.getBoundingClientRect();
+                pointer.x = e.clientX - rect.left;
+                pointer.y = e.clientY - rect.top;
+            });
+            heroSection.addEventListener('pointerleave', function() {
+                pointer.x = null;
+                pointer.y = null;
+            });
+
+            let resizeTimer;
+            window.addEventListener('resize', function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(sizeConstellation, 200);
+            });
         }
     }
 
-    createParticles();
+    // --- Cinematic name reveal ---
+    const nameEl = document.querySelector('.home .text-2');
+    if (nameEl && !prefersReduced) {
+        const nameText = nameEl.textContent.trim();
+        nameEl.setAttribute('aria-label', nameText);
+        nameEl.textContent = '';
+        const frag = document.createDocumentFragment();
+        Array.from(nameText).forEach(function(chr, i) {
+            const span = document.createElement('span');
+            span.className = 'ch';
+            span.textContent = chr;
+            span.setAttribute('aria-hidden', 'true');
+            span.style.setProperty('--d', (0.35 + i * 0.045) + 's');
+            frag.appendChild(span);
+        });
+        nameEl.appendChild(frag);
+        nameEl.classList.add('split');
+
+        // keep the gradient continuous across the individual letters
+        const paintNameGradient = function() {
+            const nameRect = nameEl.getBoundingClientRect();
+            const total = nameRect.width || 1;
+            nameEl.querySelectorAll('.ch').forEach(function(span) {
+                const offset = span.getBoundingClientRect().left - nameRect.left;
+                span.style.backgroundSize = total + 'px 100%';
+                span.style.backgroundPosition = -offset + 'px 0';
+            });
+        };
+        paintNameGradient();
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(paintNameGradient);
+        }
+        window.addEventListener('resize', paintNameGradient);
+    }
+
+    // --- 3D parallax layers + cursor spotlight + magnetic buttons ---
+    if (heroSection && finePointer && !prefersReduced) {
+        const spotlight = document.querySelector('.hero-spotlight');
+        const layers = [
+            { el: document.querySelector('.bitmoji-static'), depth: 26 },
+            { el: document.querySelector('.badge-floating'), depth: 40 },
+            { el: document.querySelector('.home .text-2'), depth: 10 },
+            { el: document.querySelector('.particles-container'), depth: 6 }
+        ].filter(function(l) { return l.el; });
+
+        heroSection.addEventListener('mousemove', function(e) {
+            const nx = e.clientX / window.innerWidth - 0.5;
+            const ny = e.clientY / window.innerHeight - 0.5;
+            layers.forEach(function(l) {
+                l.el.style.translate = (-nx * l.depth).toFixed(1) + 'px ' + (-ny * l.depth).toFixed(1) + 'px';
+            });
+            if (spotlight) {
+                const rect = heroSection.getBoundingClientRect();
+                spotlight.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+                spotlight.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+            }
+        });
+        heroSection.addEventListener('mouseleave', function() {
+            layers.forEach(function(l) {
+                l.el.style.translate = '0px 0px';
+            });
+        });
+
+        document.querySelectorAll('.hero-links a').forEach(function(btn) {
+            btn.addEventListener('mousemove', function(e) {
+                const r = btn.getBoundingClientRect();
+                const mx = (e.clientX - r.left - r.width / 2) / (r.width / 2);
+                const my = (e.clientY - r.top - r.height / 2) / (r.height / 2);
+                btn.style.translate = (mx * 6).toFixed(1) + 'px ' + (my * 4).toFixed(1) + 'px';
+            });
+            btn.addEventListener('mouseleave', function() {
+                btn.style.translate = '0px 0px';
+            });
+        });
+    }
+
+    // --- Animated stat counters ---
+    const statNums = document.querySelectorAll('.stat-num');
+    if (statNums.length && !prefersReduced) {
+        const runCounter = function(el) {
+            const target = parseFloat(el.dataset.count);
+            const decimals = parseInt(el.dataset.decimals || '0', 10);
+            const suffix = el.dataset.suffix || '';
+            const duration = 1400;
+            const start = performance.now();
+            const tick = function(now) {
+                const p = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - p, 3);
+                el.textContent = (target * eased).toFixed(decimals) + (p === 1 ? suffix : '');
+                if (p < 1) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        };
+        setTimeout(function() {
+            statNums.forEach(runCounter);
+        }, 800);
+    }
 
     // ============================================
     // BUTTON RIPPLE EFFECT
