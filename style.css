@@ -1903,7 +1903,7 @@ section .title::after {
    ============================================ */
 
 .publications {
-    background: var(--bg-main);
+    background: var(--bg-surface);
     color: var(--text-main);
     position: relative;
     padding: 120px 0 80px 0;
@@ -2017,7 +2017,7 @@ section .title::after {
 }
 
 .pub-front {
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+    background: linear-gradient(135deg, var(--bg-main) 0%, var(--bg-elevated) 100%);
     text-align: left;
     position: relative;
 }
@@ -2291,6 +2291,12 @@ section .title::after {
     position: relative;
 }
 
+/* Section order: services sits right after education (surface), so it stays
+   on the main background to keep the alternating rhythm */
+.services {
+    background: var(--bg-main);
+}
+
 .services .title::before,
 .teams .title::before {
     background: var(--gradient-button);
@@ -2303,7 +2309,7 @@ section .title::after {
 }
 
 .services .carousel .card {
-    background: var(--bg-main);
+    background: var(--bg-surface);
     border-radius: 20px;
     padding: 30px;
     text-align: center;
