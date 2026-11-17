@@ -706,6 +706,61 @@
     }
 
     // ============================================
+    // GLASS CARDS: rotating gradient border, cursor spotlight, subtle 3D tilt
+    // ============================================
+    function decorateCard(card) {
+        if (card.querySelector(':scope > .glass-fx')) return;
+        const fx = document.createElement('span');
+        fx.className = 'glass-fx';
+        fx.setAttribute('aria-hidden', 'true');
+        const spot = document.createElement('span');
+        spot.className = 'glass-spot';
+        fx.appendChild(spot);
+        const border = document.createElement('span');
+        border.className = 'glass-border';
+        border.setAttribute('aria-hidden', 'true');
+        card.prepend(border);
+        card.prepend(fx);
+        if (!finePointer || prefersReduced) return;
+
+        const tilt = card.hasAttribute('data-tilt');
+        let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+        const step = function () {
+            cx += (tx - cx) * 0.12;
+            cy += (ty - cy) * 0.12;
+            const settled = Math.abs(tx - cx) < 0.01 && Math.abs(ty - cy) < 0.01;
+            if (settled && tx === 0 && ty === 0) {
+                card.style.transform = '';
+                raf = 0;
+                return;
+            }
+            card.style.transform = 'perspective(900px) rotateX(' + cy.toFixed(2) + 'deg) rotateY(' + cx.toFixed(2) + 'deg)';
+            raf = settled ? 0 : requestAnimationFrame(step);
+        };
+        card.addEventListener('pointermove', function (e) {
+            if (e.pointerType !== 'mouse') return;
+            const rect = card.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            spot.style.transform = 'translate3d(' + x.toFixed(1) + 'px,' + y.toFixed(1) + 'px,0)';
+            if (tilt) {
+                tx = (x / rect.width - 0.5) * 6;
+                ty = (0.5 - y / rect.height) * 6;
+                if (!raf) raf = requestAnimationFrame(step);
+            }
+        });
+        card.addEventListener('pointerleave', function () {
+            tx = 0;
+            ty = 0;
+            if (tilt && !raf) raf = requestAnimationFrame(step);
+        });
+    }
+
+    function initCards() {
+        $$('.glass').forEach(decorateCard);
+    }
+
+    // ============================================
     // CAROUSELS (Owl, still used by some sections)
     // ============================================
     function initCarousels() {
@@ -759,7 +814,7 @@
     // ============================================
     [
         initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
-        initTitles, initTyping, initBook, initPubCards, initHero, initCarousels,
+        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initCarousels,
         initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
