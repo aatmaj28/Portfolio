@@ -3733,3 +3733,364 @@ footer span a:hover {
         transition-duration: 0.01ms !important;
     }
 }
+
+/* ============================================
+   REDESIGN 2026: FOUNDATIONS
+   Aurora background, grain, scroll progress, cursor, reveals,
+   split titles and focus states. Motion uses transform and opacity.
+   ============================================ */
+
+:root {
+    --glass-bg: rgba(17, 24, 39, 0.55);
+    --glass-bg-solid: rgba(17, 24, 39, 0.86);
+    --glass-border: rgba(148, 163, 184, 0.14);
+    --glass-highlight: rgba(255, 255, 255, 0.06);
+    --glass-shadow: 0 18px 40px rgba(2, 6, 23, 0.35);
+    --section-tint: rgba(30, 41, 59, 0.42);
+    --aurora-a: rgba(99, 102, 241, 0.55);
+    --aurora-b: rgba(139, 92, 246, 0.45);
+    --aurora-c: rgba(236, 72, 153, 0.32);
+    --aurora-opacity: 0.55;
+    --grain-opacity: 0.06;
+    --cursor-dot: #ffffff;
+    --gold: #fbbf24;
+    --gold-glow: rgba(251, 191, 36, 0.35);
+    --silver: #cbd5e1;
+    --silver-glow: rgba(203, 213, 225, 0.3);
+    --ease-out: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+[data-theme="light"] {
+    --glass-bg: rgba(255, 255, 255, 0.62);
+    --glass-bg-solid: rgba(255, 255, 255, 0.92);
+    --glass-border: rgba(99, 102, 241, 0.16);
+    --glass-highlight: rgba(255, 255, 255, 0.75);
+    --glass-shadow: 0 18px 40px rgba(15, 23, 42, 0.08);
+    --section-tint: rgba(255, 255, 255, 0.5);
+    --aurora-a: rgba(99, 102, 241, 0.32);
+    --aurora-b: rgba(139, 92, 246, 0.26);
+    --aurora-c: rgba(236, 72, 153, 0.2);
+    --aurora-opacity: 0.7;
+    --grain-opacity: 0.045;
+    --cursor-dot: #6366f1;
+    --gold: #b45309;
+    --gold-glow: rgba(245, 158, 11, 0.28);
+    --silver: #64748b;
+    --silver-glow: rgba(100, 116, 139, 0.25);
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.sr-only {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* Lenis smooth scrolling */
+html.lenis,
+html.lenis body {
+    height: auto;
+}
+
+.lenis.lenis-smooth {
+    scroll-behavior: auto !important;
+}
+
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+    overflow: clip;
+}
+
+.lenis [data-lenis-prevent] {
+    overscroll-behavior: contain;
+}
+
+/* Sections let the aurora show through; "surface" sections keep a light tint */
+.home,
+.about,
+.services,
+.publications,
+.skills,
+footer {
+    background: transparent;
+}
+
+.education,
+.teams,
+.awards,
+.contact {
+    background: var(--section-tint);
+}
+
+.animated-bg {
+    animation: none;
+}
+
+/* Aurora mesh behind everything */
+.aurora {
+    position: fixed;
+    inset: 0;
+    z-index: -2;
+    overflow: hidden;
+    pointer-events: none;
+    opacity: var(--aurora-opacity);
+    contain: strict;
+}
+
+.aurora span {
+    position: absolute;
+    width: 72vmax;
+    height: 72vmax;
+    border-radius: 50%;
+    will-change: transform;
+}
+
+.aurora span:nth-child(1) {
+    left: -28vmax;
+    top: -32vmax;
+    background: radial-gradient(closest-side, var(--aurora-a), transparent);
+    animation: auroraDriftA 26s ease-in-out infinite alternate;
+}
+
+.aurora span:nth-child(2) {
+    right: -32vmax;
+    top: 8vmax;
+    background: radial-gradient(closest-side, var(--aurora-b), transparent);
+    animation: auroraDriftB 32s ease-in-out infinite alternate;
+}
+
+.aurora span:nth-child(3) {
+    left: 4vmax;
+    bottom: -44vmax;
+    background: radial-gradient(closest-side, var(--aurora-c), transparent);
+    animation: auroraDriftC 38s ease-in-out infinite alternate;
+}
+
+@keyframes auroraDriftA {
+    to { transform: translate3d(18vmax, 14vmax, 0) scale(1.15); }
+}
+
+@keyframes auroraDriftB {
+    to { transform: translate3d(-16vmax, 18vmax, 0) scale(0.9); }
+}
+
+@keyframes auroraDriftC {
+    to { transform: translate3d(14vmax, -16vmax, 0) scale(1.1); }
+}
+
+/* Fine film grain (static, so it costs nothing while scrolling) */
+.grain {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    opacity: var(--grain-opacity);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.7 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    background-size: 160px 160px;
+}
+
+[data-theme="light"] .grain {
+    filter: invert(1);
+}
+
+/* Scroll progress bar */
+.scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    z-index: 1001;
+    background: var(--gradient-button);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.6);
+    transform: scaleX(0);
+    transform-origin: 0 50%;
+    pointer-events: none;
+}
+
+/* Custom cursor: a dot plus a soft glow ring (desktop only, set up by JS) */
+.cursor-dot,
+.cursor-ring {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 10001;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    will-change: transform;
+}
+
+.cursor-dot {
+    width: 6px;
+    height: 6px;
+    margin: -3px 0 0 -3px;
+    border-radius: 50%;
+    background: var(--cursor-dot);
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.9);
+}
+
+.cursor-ring {
+    width: 36px;
+    height: 36px;
+    margin: -18px 0 0 -18px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(139, 92, 246, 0.55);
+    background: radial-gradient(circle, rgba(139, 92, 246, 0.16), transparent 70%);
+}
+
+.cursor-ring.is-link {
+    border-color: rgba(236, 72, 153, 0.6);
+    background: radial-gradient(circle, rgba(236, 72, 153, 0.14), transparent 70%);
+}
+
+.has-cursor.cursor-visible .cursor-dot,
+.has-cursor.cursor-visible .cursor-ring {
+    opacity: 1;
+}
+
+.has-cursor.cursor-text .cursor-dot,
+.has-cursor.cursor-text .cursor-ring {
+    opacity: 0;
+}
+
+.has-cursor body,
+.has-cursor a,
+.has-cursor button,
+.has-cursor [role="tab"],
+.has-cursor .pub-card,
+.has-cursor .book,
+.has-cursor .skill-tag {
+    cursor: none;
+}
+
+.has-cursor input,
+.has-cursor textarea {
+    cursor: text;
+}
+
+/* Reveal on scroll: content shows by default and only hides once JS is running */
+.js [data-reveal] {
+    opacity: 0;
+    translate: 0 28px;
+    transition: opacity 0.8s var(--ease-out) var(--reveal-delay, 0ms), translate 0.8s var(--ease-out) var(--reveal-delay, 0ms);
+}
+
+.js [data-reveal].is-in,
+.reveal-fallback [data-reveal] {
+    opacity: 1;
+    translate: 0 0;
+}
+
+/* Education cards used to fade in on their own; the reveal system handles them now */
+.edu-card,
+.edu-card.visible {
+    opacity: 1;
+    transform: none;
+}
+
+/* Section titles split into words that blur in */
+section .title.is-split {
+    background: none;
+    -webkit-text-fill-color: currentColor;
+}
+
+.title-word {
+    display: inline-block;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    opacity: 0;
+    transform: translate3d(0, 0.35em, 0);
+    filter: blur(12px);
+    transition: opacity 0.9s var(--ease-out), transform 0.9s var(--ease-out), filter 0.9s var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 90ms);
+}
+
+section .title.is-in .title-word {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+}
+
+section .title.is-split::before {
+    transform: translateX(-50%) scaleX(0);
+    transition: transform 1s var(--ease-out) 0.35s;
+}
+
+section .title.is-in::before {
+    transform: translateX(-50%) scaleX(1);
+}
+
+/* Focus states */
+:focus-visible {
+    outline: 2px solid var(--secondary);
+    outline-offset: 3px;
+}
+
+section[tabindex="-1"]:focus {
+    outline: none;
+}
+
+/* Buttons that used to be divs */
+.scroll-up-btn {
+    border: 0;
+    padding: 0;
+    font: inherit;
+}
+
+.menu-btn {
+    background: none;
+    border: 0;
+    padding: 4px;
+    line-height: 1;
+    font-family: inherit;
+}
+
+/* Moved here from script.js */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.6);
+    transform: scale(0);
+    animation: ripple-animation 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+.navbar .menu li a.active {
+    color: var(--text-main);
+    background: rgba(99, 102, 241, 0.2);
+}
+
+.navbar .menu li a.active::after {
+    width: 80%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aurora span {
+        animation: none;
+    }
+
+    .js [data-reveal] {
+        opacity: 1;
+        translate: none;
+        transition: none;
+    }
+}
