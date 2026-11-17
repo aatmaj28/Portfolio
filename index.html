@@ -1248,7 +1248,7 @@
             if (EMAILJS_CONFIG.PUBLIC_KEY === 'YOUR_EMAILJS_PUBLIC_KEY' || 
                 EMAILJS_CONFIG.SERVICE_ID === 'YOUR_SERVICE_ID' || 
                 EMAILJS_CONFIG.TEMPLATE_ID === 'YOUR_TEMPLATE_ID') {
-                msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Email service not configured. Please set up EmailJS (see EMAIL_SETUP.md) or email directly at aatmajsalunke@gmail.com`
+                msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Email service not configured. Please set up EmailJS (see EMAIL_SETUP.md) or email directly at aatmajsalunke@yahoo.com`
                 msg.className = 'warning'
                 setTimeout(() => {
                     msg.innerHTML = ""
@@ -1267,7 +1267,7 @@
                 from_email: form.email.value.trim(),
                 subject: form.Sub.value.trim(),
                 message: form.Message.value.trim(),
-                to_email: 'aatmajsalunke@gmail.com'
+                to_email: 'aatmajsalunke@yahoo.com'
             }
 
             try {
@@ -1291,7 +1291,7 @@
                 
             } catch (error) {
                 console.error('Error sending email:', error)
-                msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to send message. Error: ${error.text || error.message}. Please try again or email directly at aatmajsalunke@gmail.com`
+                msg.innerHTML = `<i class="fas fa-exclamation-circle"></i> Failed to send message. Error: ${error.text || error.message}. Please try again or email directly at aatmajsalunke@yahoo.com`
                 msg.className = 'error'
                 setTimeout(() => {
                     msg.innerHTML = ""
