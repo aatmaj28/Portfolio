@@ -37,9 +37,9 @@ $(document).ready(function() {
         $('.menu-btn i').toggleClass("active");
     });
 
-    // Close menu when clicking on a link
+    // Close menu when clicking on a link (only matters while the hamburger is showing)
     $('.navbar .menu li a').click(function() {
-        if ($(window).width() < 947) {
+        if ($('.navbar-actions .menu-btn').is(':visible')) {
             $('.navbar .menu').removeClass("active");
             $('.menu-btn i').removeClass("active");
         }
@@ -168,7 +168,7 @@ $(document).ready(function() {
     });
 
     // Observe cards and other elements
-    document.querySelectorAll('.edu-card, .pub-card, .services .card, .teams .card, .skill-category').forEach(card => {
+    document.querySelectorAll('.edu-card, .pub-card, .services .card, .teams .card, .skill-category, .awards .card, .award-card').forEach(card => {
         card.classList.add('fade-in');
         observer.observe(card);
     });
