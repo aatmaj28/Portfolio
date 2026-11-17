@@ -2449,6 +2449,7 @@ section .title::after {
     font-size: 14px;
     color: var(--primary);
     font-weight: 500;
+    margin-bottom: 10px;
 }
 
 .services .carousel .card p {
@@ -2459,13 +2460,17 @@ section .title::after {
 }
 
 .services .carousel .card img {
-    height: 120px;
-    width: 120px;
+    height: 100px;
+    width: 100px;
     object-fit: cover;
     border-radius: 50%;
     border: 3px solid var(--primary);
     transition: all var(--transition-base);
     box-shadow: var(--shadow-md);
+}
+
+.services .carousel .card img.logo-contain {
+    object-fit: contain;
 }
 
 .services .carousel .card:hover img {
