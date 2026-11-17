@@ -5053,3 +5053,231 @@ section[tabindex="-1"]:focus {
 .publications .pub-card h3:not(.pub-title-long) {
     -webkit-line-clamp: 4;
 }
+
+/* ============================================
+   REDESIGN 2026: AWARDS & LEADERSHIP
+   Leadership as glass cards; awards as a bento grid where wins glow gold
+   and second place glows silver.
+   ============================================ */
+
+.lead-grid {
+    max-width: 1080px;
+    gap: 24px;
+}
+
+.lead-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 26px 26px 24px;
+}
+
+.lead-card .lead-icon {
+    width: 60px;
+    height: 60px;
+    flex-shrink: 0;
+    border-radius: 18px;
+    border: 0;
+    font-size: 26px;
+    box-shadow: 0 10px 26px rgba(99, 102, 241, 0.35);
+    transition: transform 0.5s var(--ease-out);
+}
+
+.lead-card:hover .lead-icon {
+    transform: rotate(-6deg) scale(1.06);
+    border-color: transparent;
+}
+
+.lead-body {
+    min-width: 0;
+}
+
+.lead-role {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-main);
+    line-height: 1.3;
+}
+
+.lead-org {
+    margin-top: 3px;
+    font-size: 14.5px;
+    color: var(--text-sub);
+}
+
+.lead-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.lead-desc {
+    margin-top: 12px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--text-sub);
+}
+
+/* Awards bento: 6 column grid, talks and the last two take half a row */
+.award-bento {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 20px;
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.award-tile {
+    grid-column: span 2;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 22px 22px 20px;
+    overflow: hidden;
+}
+
+.award-tile:nth-child(1),
+.award-tile:nth-child(2),
+.award-tile:nth-child(6),
+.award-tile:nth-child(7) {
+    grid-column: span 3;
+}
+
+.award-tile-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 4px;
+}
+
+.award-tile .award-icon {
+    width: 54px;
+    height: 54px;
+    border-radius: 16px;
+    font-size: 24px;
+}
+
+.award-tile .pill {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+
+.award-tile h4 {
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.35;
+    color: var(--text-main);
+}
+
+.award-tile p {
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--text-sub);
+}
+
+/* Accent glow in the corner of each tile */
+.award-tile::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -25%;
+    width: 75%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle, var(--tile-glow, rgba(139, 92, 246, 0.28)), transparent 68%);
+    z-index: -1;
+    opacity: 0.8;
+    transition: opacity 0.4s ease, transform 0.6s var(--ease-out);
+    pointer-events: none;
+}
+
+.award-tile:hover::before {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.award-tile.is-talk {
+    --tile-glow: rgba(236, 72, 153, 0.26);
+}
+
+.award-tile.medal-gold {
+    --tile-glow: var(--gold-glow);
+    border-color: rgba(251, 191, 36, 0.35);
+}
+
+.award-tile.medal-silver {
+    --tile-glow: var(--silver-glow);
+    border-color: rgba(203, 213, 225, 0.35);
+}
+
+.award-tile.medal-gold .award-icon {
+    background: rgba(251, 191, 36, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(251, 191, 36, 0.4), 0 0 24px var(--gold-glow);
+}
+
+.award-tile.medal-gold .award-icon i {
+    background: linear-gradient(135deg, #fde68a, #f59e0b);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+.award-tile.medal-silver .award-icon {
+    background: rgba(203, 213, 225, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(203, 213, 225, 0.4), 0 0 24px var(--silver-glow);
+}
+
+.award-tile.medal-silver .award-icon i {
+    background: linear-gradient(135deg, #f8fafc, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .award-tile.medal-gold .award-icon i {
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+[data-theme="light"] .award-tile.medal-silver .award-icon i {
+    background: linear-gradient(135deg, #94a3b8, #475569);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+@media (max-width: 1024px) {
+    .award-bento {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .award-tile,
+    .award-tile:nth-child(1),
+    .award-tile:nth-child(2),
+    .award-tile:nth-child(6),
+    .award-tile:nth-child(7) {
+        grid-column: span 1;
+    }
+
+    .award-tile:last-child {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 768px) {
+    .award-bento {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .award-tile:last-child {
+        grid-column: span 1;
+    }
+
+    .lead-card {
+        flex-direction: column;
+        gap: 16px;
+    }
+}
