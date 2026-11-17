@@ -2084,8 +2084,35 @@ section .title::after {
 }
 
 .pub-card:hover .pub-inner,
-.pub-card.flipped .pub-inner {
+.pub-card.flipped .pub-inner,
+.pub-card:focus-within .pub-inner {
     transform: rotateY(180deg);
+}
+
+.pub-card:focus {
+    outline: none;
+}
+
+.pub-card:focus-visible .pub-back {
+    box-shadow: 0 0 0 3px var(--primary), 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+/* Touch devices can't hover, so tell people they can tap */
+@media (hover: none) {
+    .pub-front::after {
+        content: 'Tap to flip ↻';
+        position: absolute;
+        right: 18px;
+        bottom: 16px;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 600;
+        letter-spacing: 0.3px;
+        color: var(--text-sub);
+        background: rgba(99, 102, 241, 0.12);
+        border: 1px solid rgba(99, 102, 241, 0.3);
+    }
 }
 
 .pub-front, .pub-back {
@@ -2162,6 +2189,78 @@ section .title::after {
     background: linear-gradient(135deg, #8b5cf6 0%, #ec4899 100%);
 }
 
+.pub-type-badge.under-review {
+    background: transparent;
+    color: var(--text-main);
+    border: 1px dashed rgba(99, 102, 241, 0.7);
+    box-shadow: none;
+}
+
+/* Badge row: main badge plus a small extra tag (e.g. Spotlight) */
+.pub-badges {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.pub-badges .pub-type-badge {
+    flex: 1;
+    margin-bottom: 0;
+}
+
+.pub-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #f472b6;
+    background: rgba(236, 72, 153, 0.12);
+    border: 1px solid rgba(236, 72, 153, 0.45);
+    white-space: nowrap;
+}
+
+.pub-tag i {
+    font-size: 10px;
+}
+
+[data-theme="light"] .pub-tag {
+    color: #be185d;
+}
+
+/* OpenReview button under the section title */
+.pub-profile {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    margin-top: -40px;
+}
+
+.pub-profile .github-btn i {
+    margin-right: 6px;
+}
+
+/* Second row for papers under review */
+.pub-group-title {
+    position: relative;
+    z-index: 1;
+    margin: 10px 0 0;
+}
+
+.publications .under-review {
+    margin-top: 0;
+}
+
+.publications .under-review .owl-stage-outer {
+    padding-top: 50px;
+    padding-bottom: 60px;
+}
+
 .pub-card h3 {
     font-size: 20px;
     margin-bottom: 12px;
@@ -2174,6 +2273,12 @@ section .title::after {
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Long paper titles get a little smaller so they fit instead of being cut off */
+.pub-card h3.pub-title-long {
+    font-size: 17px;
+    -webkit-line-clamp: 6;
 }
 
 .pub-divider {

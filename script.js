@@ -213,7 +213,11 @@ $(document).ready(function() {
             if (e.target.closest('a')) {
                 return;
             }
-            this.classList.toggle('flipped');
+            const flipped = this.classList.toggle('flipped');
+            // Cards also flip on focus, so drop focus when flipping back
+            if (!flipped) {
+                this.blur();
+            }
         });
     });
 
