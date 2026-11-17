@@ -1,4 +1,13 @@
 $(document).ready(function() {
+    // Respect the visitor's reduced motion setting everywhere below
+    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    // Footer year stays current
+    const footerYear = document.getElementById('footerYear');
+    if (footerYear) {
+        footerYear.textContent = new Date().getFullYear();
+    }
+
     // ============================================
     // NAVBAR SCROLL EFFECT
     // ============================================
@@ -48,23 +57,32 @@ $(document).ready(function() {
     // ============================================
     // TYPING ANIMATIONS
     // ============================================
-    var typed = new Typed(".typing", {
-        strings: ["AI Agents", "LLMs", "Cloud Solutions", "Scalable Systems", "LLM Systems", "RAG Pipelines", "AI Evaluation"],
-        typeSpeed: 100,
-        backSpeed: 60,
-        loop: true,
-        showCursor: true,
-        cursorChar: '|'
-    });
+    const heroPhrases = ["AI Agents", "LLMs", "Cloud Solutions", "Scalable Systems", "LLM Systems", "RAG Pipelines", "AI Evaluation"];
+    const aboutPhrases = ["Programmer", "Photographer", "Gamer", "Athlete", "Builder", "Runner"];
 
-    var typed2 = new Typed(".typing-2", {
-        strings: ["Programmer", "Photographer", "Gamer", "Athlete", "Builder", "Runner"],
-        typeSpeed: 100,
-        backSpeed: 60,
-        loop: true,
-        showCursor: true,
-        cursorChar: '|'
-    });
+    if (prefersReduced) {
+        // No typing loop for reduced motion: show the first phrase and leave it
+        $('.typing').text(heroPhrases[0]);
+        $('.typing-2').text(aboutPhrases[0]);
+    } else {
+        var typed = new Typed(".typing", {
+            strings: heroPhrases,
+            typeSpeed: 100,
+            backSpeed: 60,
+            loop: true,
+            showCursor: true,
+            cursorChar: '|'
+        });
+
+        var typed2 = new Typed(".typing-2", {
+            strings: aboutPhrases,
+            typeSpeed: 100,
+            backSpeed: 60,
+            loop: true,
+            showCursor: true,
+            cursorChar: '|'
+        });
+    }
 
     // ============================================
     // OWL CAROUSEL
@@ -74,8 +92,8 @@ $(document).ready(function() {
     $('.services .carousel, .teams .carousel, .skills .carousel').owlCarousel({
         margin: 30,
         loop: true,
-        autoplay: true,
-        autoplayTimeOut: 4000,
+        autoplay: !prefersReduced,
+        autoplayTimeout: 4000,
         autoplayHoverPause: true,
         autoHeight: false,
         stagePadding: 0,
@@ -111,8 +129,8 @@ $(document).ready(function() {
     $('.publications .carousel').owlCarousel({
         margin: 30,
         loop: true,
-        autoplay: true,
-        autoplayTimeOut: 5000,
+        autoplay: !prefersReduced,
+        autoplayTimeout: 5000,
         autoplayHoverPause: true,
         autoHeight: false,
         stagePadding: 0,
@@ -277,7 +295,6 @@ $(document).ready(function() {
     // ============================================
     // HERO WOW EFFECTS
     // ============================================
-    const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const heroSection = document.querySelector('.home');
 
@@ -653,7 +670,7 @@ style.textContent = `
     }
 
     .navbar .menu li a.active {
-        color: var(--text-primary);
+        color: var(--text-main);
         background: rgba(99, 102, 241, 0.2);
     }
 
