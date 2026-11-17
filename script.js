@@ -49,7 +49,7 @@ $(document).ready(function() {
     // TYPING ANIMATIONS
     // ============================================
     var typed = new Typed(".typing", {
-        strings: ["AI Agents", "LLMs", "Cloud Solutions", "Scalable Systems"],
+        strings: ["AI Agents", "LLMs", "Cloud Solutions", "Scalable Systems", "LLM Systems", "RAG Pipelines", "AI Evaluation"],
         typeSpeed: 100,
         backSpeed: 60,
         loop: true,
@@ -58,7 +58,7 @@ $(document).ready(function() {
     });
 
     var typed2 = new Typed(".typing-2", {
-        strings: ["Programmer", "Photographer", "Gamer", "Athlete"],
+        strings: ["Programmer", "Photographer", "Gamer", "Athlete", "Builder", "Runner"],
         typeSpeed: 100,
         backSpeed: 60,
         loop: true,
@@ -185,6 +185,22 @@ $(document).ready(function() {
         aboutBook.addEventListener('click', function() {
             aboutBook.classList.toggle('open');
         });
+    }
+
+    // Show a fade and a "Scroll for more" hint while the bio has more text below
+    const bookPage = document.querySelector('.about .book-page');
+    const bookInner = document.querySelector('.about .book-inner');
+    if (bookPage && bookInner) {
+        const updateBookHint = function() {
+            const remaining = bookInner.scrollHeight - bookInner.scrollTop - bookInner.clientHeight;
+            bookPage.classList.toggle('has-more', remaining > 8);
+        };
+        bookInner.addEventListener('scroll', updateBookHint, { passive: true });
+        window.addEventListener('resize', updateBookHint);
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(updateBookHint);
+        }
+        updateBookHint();
     }
 
     // ============================================
