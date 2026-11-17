@@ -2003,39 +2003,6 @@ section .title::after {
     border-radius: 2px;
 }
 
-.publications-content {
-    margin-top: 60px;
-    position: relative;
-    z-index: 1;
-    overflow: visible;
-    padding: 0;
-}
-
-.publications .carousel {
-    overflow: visible;
-}
-
-.publications .owl-stage-outer {
-    overflow: hidden !important;
-    padding: 120px 20px;
-    margin: 0 -20px;
-}
-
-.publications .carousel {
-    overflow: visible !important;
-}
-
-.publications .owl-stage {
-    display: flex;
-    overflow: visible !important;
-}
-
-.publications .owl-item {
-    display: flex;
-    height: auto;
-    overflow: visible !important;
-}
-
 .pub-card {
     width: 100%;
     height: 450px;
@@ -2219,20 +2186,6 @@ section .title::after {
 }
 
 /* Second row for papers under review */
-.pub-group-title {
-    position: relative;
-    z-index: 1;
-    margin: 10px 0 0;
-}
-
-.publications .under-review {
-    margin-top: 0;
-}
-
-.publications .under-review .owl-stage-outer {
-    padding-top: 50px;
-    padding-bottom: 60px;
-}
 
 .pub-card h3 {
     font-size: 20px;
@@ -2320,7 +2273,6 @@ section .title::after {
     font-style: normal;
     color: var(--text-sub);
 }
-
 
 .pub-back {
     background: var(--gradient-button);
@@ -2421,7 +2373,6 @@ section .title::after {
     transform: translateX(5px);
 }
 
-
 /* Responsive Publications */
 @media (max-width: 1200px) {
     .pub-card {
@@ -2476,94 +2427,6 @@ section .title::after {
     color: var(--text-sub);
 }
 
-.services .carousel .card,
-.awards .lead-grid .card {
-    background: var(--bg-surface);
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    overflow: visible;
-    transition: all var(--transition-base);
-    border: 2px solid rgba(99, 102, 241, 0.2);
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    margin: 0;
-}
-
-.services .carousel .card:hover,
-.awards .lead-grid .card:hover {
-    background: var(--bg-elevated);
-    transform: translateY(-10px) scale(1.02);
-    border-color: var(--primary);
-    box-shadow: var(--shadow-glow);
-    z-index: 10;
-    position: relative;
-}
-
-.services .carousel .card .box,
-.awards .lead-grid .card .box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-base);
-}
-
-.services .carousel .card:hover .box,
-.awards .lead-grid .card:hover .box {
-    transform: scale(1.03);
-}
-
-.services .carousel .card .text,
-.awards .lead-grid .card .text {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 15px 0 10px 0;
-    color: var(--text-main);
-}
-
-.services .carousel .card .sub-text,
-.awards .lead-grid .card .sub-text {
-    font-size: 16px;
-    color: var(--text-sub);
-    margin-bottom: 10px;
-}
-
-.services .carousel .card .date,
-.awards .lead-grid .card .date {
-    font-size: 14px;
-    color: var(--primary);
-    font-weight: 500;
-    margin-bottom: 10px;
-}
-
-.services .carousel .card p,
-.awards .lead-grid .card p {
-    font-size: 14px;
-    color: var(--text-sub);
-    line-height: 1.6;
-    margin-top: 15px;
-}
-
-.services .carousel .card img {
-    height: 100px;
-    width: 100px;
-    object-fit: cover;
-    border-radius: 50%;
-    border: 3px solid var(--primary);
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
-}
-
-.services .carousel .card img.logo-contain {
-    object-fit: contain;
-}
-
-.services .carousel .card:hover img {
-    border-color: var(--secondary);
-    transform: rotate(360deg) scale(1.1);
-}
-
 /* ============================================
    AWARDS & LEADERSHIP SECTION
    ============================================ */
@@ -2587,9 +2450,6 @@ section .title::after {
 }
 
 /* Leadership cards sit on the surface background, so use the main background like project cards do */
-.awards .lead-grid .card {
-    background: var(--bg-main);
-}
 
 .lead-icon {
     width: 100px;
@@ -2604,55 +2464,6 @@ section .title::after {
     color: #fff;
     font-size: 40px;
     transition: all var(--transition-base);
-}
-
-.awards .lead-grid .card:hover .lead-icon {
-    border-color: var(--secondary);
-    transform: rotate(360deg) scale(1.1);
-}
-
-.award-list {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 20px;
-    max-width: 980px;
-    margin: 0 auto;
-}
-
-.award-card {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    background: rgba(255,255,255,0.02);
-    border: 1px solid rgba(99,102,241,0.25);
-    border-radius: 20px;
-    padding: 20px 22px;
-    box-shadow: 0 15px 40px rgba(0,0,0,0.25);
-    backdrop-filter: blur(8px);
-    overflow: hidden;
-    isolation: isolate;
-    transition: all 0.6s ease, box-shadow 0.4s ease;
-}
-
-.award-card::before {
-    content: '';
-    position: absolute;
-    inset: -40% -30%;
-    background: radial-gradient(circle at 30% 30%, rgba(99,102,241,0.18), rgba(236,72,153,0.08), transparent 60%);
-    opacity: 0.6;
-    transition: opacity 0.4s ease;
-    z-index: -1;
-}
-
-.award-card:hover::before {
-    opacity: 1;
-}
-
-.award-card:hover {
-    transform: translateY(-6px);
-    box-shadow: 0 20px 50px rgba(99,102,241,0.3);
-    border-color: rgba(99,102,241,0.5);
 }
 
 .award-icon {
@@ -2676,43 +2487,6 @@ section .title::after {
     background-clip: text;
 }
 
-.award-card:hover .award-icon {
-    transform: scale(1.05) rotate(-3deg);
-}
-
-.award-body {
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.award-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 10px;
-}
-
-.award-top h4 {
-    font-size: 17px;
-    font-weight: 700;
-    line-height: 1.35;
-    color: var(--text-main);
-}
-
-.award-top .pill {
-    flex-shrink: 0;
-    padding: 5px 10px;
-    font-size: 12px;
-}
-
-.award-body p {
-    font-size: 14px;
-    line-height: 1.5;
-    color: var(--text-sub);
-}
-
 .also-built {
     max-width: 980px;
     margin: 40px auto 0;
@@ -2722,8 +2496,7 @@ section .title::after {
 }
 
 @media (max-width: 768px) {
-    .lead-grid,
-    .award-list {
+    .lead-grid {
         grid-template-columns: 1fr;
     }
 
@@ -2734,11 +2507,6 @@ section .title::after {
 }
 
 @media (max-width: 500px) {
-    .award-card {
-        align-items: flex-start;
-        padding: 18px;
-        gap: 14px;
-    }
 
     .award-icon {
         width: 52px;
@@ -2747,10 +2515,6 @@ section .title::after {
         border-radius: 14px;
     }
 
-    .award-top {
-        flex-direction: column;
-        gap: 6px;
-    }
 }
 
 /* ============================================
@@ -2765,69 +2529,6 @@ section .title::after {
 .skills .title::after {
     content: "what i know";
     color: var(--text-sub);
-}
-
-.skills-content {
-    margin-top: 60px;
-    position: relative;
-    z-index: 1;
-    overflow: visible;
-}
-
-.skills .carousel {
-    overflow: visible;
-}
-
-.skills .owl-stage-outer {
-    overflow: hidden !important;
-    padding: 50px 20px;
-    margin: 0 -20px;
-}
-
-.skills .owl-stage {
-    display: flex;
-    overflow: visible !important;
-}
-
-.skills .owl-item {
-    overflow: visible !important;
-}
-
-.skill-category {
-    background: var(--bg-surface);
-    padding: 40px;
-    border-radius: 25px;
-    border: 2px solid rgba(99, 102, 241, 0.3);
-    transition: all var(--transition-base);
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    margin: 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.skill-category::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: var(--gradient-button);
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform 0.6s ease;
-}
-
-.skill-category:hover::before {
-    transform: scaleX(1);
-}
-
-.skill-category:hover {
-    border-color: var(--primary);
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: var(--shadow-glow);
 }
 
 .category-icon {
@@ -2923,122 +2624,7 @@ section .title::after {
     color: var(--text-sub);
 }
 
-.teams .carousel .card {
-    background: var(--bg-main);
-    border-radius: 20px;
-    padding: 30px;
-    text-align: center;
-    overflow: visible;
-    transition: all var(--transition-base);
-    border: 2px solid rgba(99, 102, 241, 0.2);
-    box-shadow: var(--shadow-md);
-    height: 100%;
-    position: relative;
-    margin: 0;
-}
-
-.teams .carousel .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: var(--gradient-button);
-    opacity: 0;
-    transition: opacity var(--transition-base);
-    z-index: 0;
-    border-radius: 20px;
-}
-
-.teams .carousel .card:hover::before {
-    opacity: 0.1;
-}
-
-.teams .carousel .card:hover {
-    transform: translateY(-10px) rotateX(5deg) scale(1.02);
-    border-color: var(--primary);
-    box-shadow: var(--shadow-glow);
-    z-index: 10;
-    position: relative;
-}
-
-.teams .carousel .card .box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    transition: all var(--transition-base);
-    position: relative;
-    z-index: 1;
-}
-
-.teams .carousel .card:hover .box {
-    transform: scale(1.03);
-}
-
-.teams .carousel .card .text {
-    font-size: 22px;
-    font-weight: 600;
-    margin: 15px 0 10px 0;
-    color: var(--text-main);
-}
-
-.teams .carousel .card p {
-    font-size: 14px;
-    color: var(--text-sub);
-    line-height: 1.6;
-    margin: 15px 0;
-}
-
-.teams .carousel .card img {
-    height: 120px;
-    width: 120px;
-    object-fit: cover;
-    border-radius: 20px;
-    border: 3px solid var(--primary);
-    transition: all var(--transition-base);
-    box-shadow: var(--shadow-md);
-}
-
-.teams .carousel .card:hover img {
-    border-color: var(--secondary);
-    transform: scale(1.1);
-}
-
 /* Icon tile used when a project has no artwork yet; matches the image tile */
-.teams .carousel .card .project-placeholder {
-    height: 120px;
-    width: 120px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 20px;
-    border: 3px solid var(--primary);
-    background: var(--gradient-button);
-    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.25);
-    color: #fff;
-    font-size: 46px;
-    transition: all var(--transition-base);
-}
-
-.teams .carousel .card:hover .project-placeholder {
-    border-color: var(--secondary);
-    transform: scale(1.1);
-}
-
-.teams .carousel .card .project-links {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    margin-top: 15px;
-}
-
-.teams .carousel .card .project-links .github-btn {
-    margin-top: 0;
-}
 
 .github-btn {
     display: inline-block;
@@ -3423,51 +3009,6 @@ footer span a:hover {
    OWL CAROUSEL CUSTOMIZATION
    ============================================ */
 
-.services .owl-stage-outer,
-.teams .owl-stage-outer {
-    overflow: hidden !important;
-    padding: 50px 20px;
-    margin: 0 -20px;
-}
-
-.services .owl-stage,
-.teams .owl-stage {
-    display: flex;
-    overflow: visible !important;
-}
-
-.services .owl-item,
-.teams .owl-item {
-    overflow: visible !important;
-}
-
-.owl-dots {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.owl-dot {
-    height: 15px;
-    width: 15px;
-    margin: 0 8px;
-    outline: none !important;
-    border-radius: 50%;
-    border: 2px solid var(--primary) !important;
-    transition: all var(--transition-base);
-    background: transparent !important;
-}
-
-.owl-dot.active {
-    width: 40px;
-    border-radius: 20px;
-    background: var(--gradient-button) !important;
-}
-
-.owl-dot:hover {
-    background: var(--primary) !important;
-    transform: scale(1.2);
-}
-
 /* ============================================
    RESPONSIVE DESIGN
    ============================================ */
@@ -3566,9 +3107,7 @@ footer span a:hover {
         width: 100%;
     }
     
-    .skill-category {
-        padding: 30px 20px;
-    }
+
     
     .category-icon {
         font-size: 40px;
@@ -3611,18 +3150,6 @@ footer span a:hover {
     .home .home-content a {
         font-size: 16px;
         padding: 12px 24px;
-    }
-
-    .publications .owl-stage-outer {
-        padding: 40px 12px;
-        margin: 0 -12px;
-    }
-
-    .skills .owl-stage-outer,
-    .services .owl-stage-outer,
-    .teams .owl-stage-outer {
-        padding: 30px 12px;
-        margin: 0 -12px;
     }
 
     .avatar-container {
@@ -5279,5 +4806,271 @@ section[tabindex="-1"]:focus {
     .lead-card {
         flex-direction: column;
         gap: 16px;
+    }
+}
+
+/* ============================================
+   REDESIGN 2026: SKILLS BENTO AND TECH MARQUEE
+   ============================================ */
+
+.tech-marquee {
+    position: relative;
+    overflow: hidden;
+    margin: -34px 0 44px;
+    padding: 6px 0;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+
+.marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee 48s linear infinite;
+    will-change: transform;
+}
+
+.tech-marquee:hover .marquee-track {
+    animation-play-state: paused;
+}
+
+.marquee-list {
+    display: flex;
+    gap: 14px;
+    margin: 0;
+    padding: 0 7px;
+    list-style: none;
+}
+
+.marquee-list li {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 18px;
+    border-radius: 999px;
+    border: 1px solid var(--glass-border);
+    background: var(--glass-bg);
+    color: var(--text-main);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.marquee-list li i,
+.marquee-list li .skill-svg {
+    color: #a78bfa;
+}
+
+[data-theme="light"] .marquee-list li i,
+[data-theme="light"] .marquee-list li .skill-svg {
+    color: #7c3aed;
+}
+
+.marquee-list .skill-svg {
+    width: 16px;
+    height: 16px;
+}
+
+@keyframes marquee {
+    to { transform: translateX(-50%); }
+}
+
+/* Bento: AI/ML is the big tile; dense flow packs the rest around it */
+.skill-bento {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-auto-flow: dense;
+    gap: 22px;
+}
+
+.skill-tile {
+    display: flex;
+    flex-direction: column;
+    padding: 26px 26px 28px;
+    border-radius: 24px;
+}
+
+.skill-ai {
+    grid-column: span 2;
+    grid-row: span 2;
+}
+
+.skill-backend,
+.skill-ds {
+    grid-column: span 2;
+}
+
+.skill-ds {
+    grid-column: 1 / -1;
+}
+
+.skill-tile-head {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.skill-tile .category-icon {
+    width: 54px;
+    height: 54px;
+    flex-shrink: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    font-size: 24px;
+    background-color: rgba(99, 102, 241, 0.12);
+    box-shadow: inset 0 0 0 1px rgba(99, 102, 241, 0.3);
+    animation: none;
+}
+
+.skill-tile .category-icon i {
+    background: var(--gradient-button);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.skill-tile .category-title {
+    margin: 0;
+    font-size: 22px;
+    text-align: left;
+}
+
+.skill-tile-head .chip-count {
+    margin-left: auto;
+    color: var(--text-sub);
+}
+
+.skill-tile .skill-list {
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.skill-tile .skill-tag {
+    padding: 8px 15px;
+    background: var(--glass-bg-solid);
+}
+
+/* Tags arrive one after another once their tile is on screen */
+.js .skill-tile:not(.is-in) .skill-tag {
+    opacity: 0;
+}
+
+.skill-tile.is-in .skill-tag {
+    animation: tagIn 0.5s var(--ease-out) backwards;
+    animation-delay: calc(var(--i, 0) * 28ms + 120ms);
+}
+
+@keyframes tagIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.94);
+    }
+}
+
+@media (max-width: 1024px) {
+    .skill-bento {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .skill-ai {
+        grid-column: 1 / -1;
+        grid-row: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .skill-bento {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .skill-tile,
+    .skill-ai,
+    .skill-backend,
+    .skill-ds {
+        grid-column: auto;
+        padding: 22px 18px;
+    }
+
+    .tech-marquee {
+        margin: -18px 0 32px;
+    }
+
+    .marquee-list li {
+        padding: 8px 14px;
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .marquee-track {
+        animation: none;
+        width: auto;
+        justify-content: center;
+    }
+
+    .marquee-list {
+        flex-wrap: wrap;
+        justify-content: center;
+        row-gap: 10px;
+    }
+
+    .marquee-list + .marquee-list {
+        display: none;
+    }
+
+    .tech-marquee {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+}
+
+/* Skills bento layout by area: the two big groups share a row, the three smaller ones share the next */
+.skill-bento {
+    grid-auto-flow: row;
+    grid-template-areas:
+        "ai ai back back"
+        "lang cloud ds ds";
+}
+
+.skill-ai,
+.skill-backend,
+.skill-ds,
+.skill-lang,
+.skill-cloud {
+    grid-column: auto;
+    grid-row: auto;
+}
+
+.skill-ai { grid-area: ai; }
+.skill-backend { grid-area: back; }
+.skill-lang { grid-area: lang; }
+.skill-cloud { grid-area: cloud; }
+.skill-ds { grid-area: ds; }
+
+@media (max-width: 1024px) {
+    .skill-bento {
+        grid-template-areas:
+            "ai ai"
+            "back back"
+            "lang cloud"
+            "ds ds";
+    }
+}
+
+@media (max-width: 640px) {
+    .skill-bento {
+        grid-template-areas: none;
+    }
+
+    .skill-ai,
+    .skill-backend,
+    .skill-ds,
+    .skill-lang,
+    .skill-cloud {
+        grid-area: auto;
     }
 }

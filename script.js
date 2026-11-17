@@ -965,23 +965,6 @@
     }
 
     // ============================================
-    // CAROUSELS (Owl, still used by some sections)
-    // ============================================
-    function initCarousels() {
-        const jq = window.jQuery;
-        if (!jq || !jq.fn || !jq.fn.owlCarousel) return;
-        const responsive = {
-            0: { items: 1, nav: false, margin: 20 },
-            768: { items: 1, nav: false, margin: 25 },
-            1024: { items: 3, nav: false, margin: 30 },
-            1400: { items: 3, nav: false, margin: 30 }
-        };
-        const base = { margin: 30, loop: true, autoplay: !prefersReduced, autoplayHoverPause: true, autoHeight: false, stagePadding: 0, responsive: responsive };
-        jq('.services .carousel, .teams .carousel, .skills .carousel').owlCarousel(Object.assign({ autoplayTimeout: 4000 }, base));
-        jq('.publications .carousel').owlCarousel(Object.assign({ autoplayTimeout: 5000 }, base));
-    }
-
-    // ============================================
     // BUTTON RIPPLE
     // ============================================
     function initRipple() {
@@ -1018,7 +1001,7 @@
     // ============================================
     [
         initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
-        initTitles, initTyping, initBook, initPubCards, initPubTabs, initHero, initCards, initTimeline, initProjects, initCarousels,
+        initTitles, initTyping, initBook, initPubCards, initPubTabs, initHero, initCards, initTimeline, initProjects,
         initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
