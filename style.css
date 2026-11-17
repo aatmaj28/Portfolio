@@ -1897,6 +1897,12 @@ section .title::after {
     margin-left: auto;
 }
 
+[data-theme="light"] .pill.cgpa {
+    background: rgba(16,185,129,0.12);
+    border-color: rgba(4,120,87,0.35);
+    color: #047857;
+}
+
 .pill.specialization {
     margin-left: 8px;
     background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 50%, #ec4899 100%);
