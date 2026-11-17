@@ -965,6 +965,285 @@
     }
 
     // ============================================
+    // THEME TOGGLE with a circular reveal (View Transitions API when available)
+    // ============================================
+    let toggleTheme = function () {};
+
+    function initThemeToggle() {
+        const button = $('#themeToggle');
+        const icon = $('#themeIcon');
+        if (!button || !icon) return;
+        const setIcon = function (theme) {
+            icon.classList.toggle('fa-sun', theme === 'light');
+            icon.classList.toggle('fa-moon', theme !== 'light');
+        };
+        const saved = function () {
+            try { return localStorage.getItem('theme'); } catch (e) { return null; }
+        };
+        setIcon(root.getAttribute('data-theme'));
+
+        toggleTheme = function (originX, originY) {
+            const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+            const apply = function () {
+                root.setAttribute('data-theme', next);
+                setIcon(next);
+                try { localStorage.setItem('theme', next); } catch (e) {}
+            };
+            if (prefersReduced || typeof document.startViewTransition !== 'function') {
+                apply();
+                return;
+            }
+            const x = originX == null ? window.innerWidth / 2 : originX;
+            const y = originY == null ? window.innerHeight / 2 : originY;
+            const radius = Math.hypot(Math.max(x, window.innerWidth - x), Math.max(y, window.innerHeight - y));
+            const transition = document.startViewTransition(apply);
+            transition.ready.then(function () {
+                root.animate({
+                    clipPath: ['circle(0px at ' + x + 'px ' + y + 'px)', 'circle(' + radius + 'px at ' + x + 'px ' + y + 'px)']
+                }, { duration: 650, easing: 'cubic-bezier(0.4, 0, 0.2, 1)', pseudoElement: '::view-transition-new(root)' });
+            }).catch(function () {});
+        };
+
+        button.addEventListener('click', function () {
+            const r = button.getBoundingClientRect();
+            toggleTheme(r.left + r.width / 2, r.top + r.height / 2);
+        });
+
+        // Follow OS theme changes until the visitor picks a theme themselves
+        const media = window.matchMedia('(prefers-color-scheme: light)');
+        const follow = function (e) {
+            if (saved()) return;
+            const theme = e.matches ? 'light' : 'dark';
+            root.setAttribute('data-theme', theme);
+            setIcon(theme);
+        };
+        if (media.addEventListener) media.addEventListener('change', follow);
+        else if (media.addListener) media.addListener(follow);
+    }
+
+    // ============================================
+    // COMMAND PALETTE: Cmd/Ctrl + K to jump to any section, project or link
+    // ============================================
+    function fuzzyMatch(query, text) {
+        const q = query.toLowerCase().trim();
+        const t = text.toLowerCase();
+        if (!q) return { score: 1, hits: [] };
+        const at = t.indexOf(q);
+        if (at > -1) {
+            const hits = [];
+            for (let i = 0; i < q.length; i++) hits.push(at + i);
+            const boundary = at === 0 || /[\s\-:(]/.test(t[at - 1]);
+            return { score: 1000 - at + (boundary ? 200 : 0), hits: hits };
+        }
+        let from = 0, score = 0, streak = 0;
+        const hits = [];
+        for (const ch of q) {
+            if (ch === ' ') continue;
+            const found = t.indexOf(ch, from);
+            if (found < 0) return null;
+            streak = found === from ? streak + 1 : 0;
+            score += 1 + streak * 3 + (found === 0 || /[\s\-:(]/.test(t[found - 1]) ? 4 : 0);
+            hits.push(found);
+            from = found + 1;
+        }
+        return { score: score, hits: hits };
+    }
+
+    function initCommandPalette() {
+        const dialog = $('#cmdk');
+        const input = $('#cmdk-input');
+        const list = $('#cmdk-list');
+        const trigger = $('#cmdkTrigger');
+        if (!dialog || !input || !list) return;
+        const isMac = /Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent);
+        $$('.cmdk-mod').forEach(function (el) { el.textContent = isMac ? '⌘' : 'Ctrl'; });
+
+        const flash = function (el) {
+            el.classList.remove('is-flash');
+            void el.offsetWidth;
+            el.classList.add('is-flash');
+            setTimeout(function () { el.classList.remove('is-flash'); }, 1800);
+        };
+
+        // Build the command list from what is on the page
+        const items = [];
+        $$('.navbar .menu a[href^="#"]').forEach(function (a) {
+            const target = document.getElementById(a.getAttribute('href').slice(1));
+            if (!target) return;
+            items.push({ label: a.textContent.trim(), hint: 'Section', icon: 'fas fa-hashtag', run: function () { scrollToElement(target, true); } });
+        });
+        $$('.project-card').forEach(function (card) {
+            const title = card.querySelector('.project-title');
+            if (!title) return;
+            const tags = $$('.project-tags li', card).map(function (li) { return li.textContent; }).join(' ');
+            items.push({
+                label: title.textContent.trim(), hint: 'Project', icon: 'fas fa-folder-open', extra: tags,
+                run: function () {
+                    if (projects) projects.reveal(card);
+                    scrollToElement(card, false);
+                    setTimeout(function () { flash(card); }, 500);
+                }
+            });
+        });
+        const addLink = function (a, label, icon) {
+            if (!a) return;
+            const href = a.getAttribute('href');
+            const download = a.hasAttribute('download');
+            items.push({
+                label: label, hint: download ? 'Download' : 'Link', icon: icon,
+                run: function () {
+                    if (download) {
+                        a.click();
+                        return;
+                    }
+                    window.open(href, '_blank', 'noopener');
+                }
+            });
+        };
+        $$('.hero-links a').forEach(function (a) {
+            const icon = a.querySelector('i');
+            addLink(a, a.textContent.trim(), icon ? icon.className : 'fas fa-link');
+        });
+        addLink($('.pub-profile a'), 'OpenReview Profile', 'fas fa-external-link-alt');
+        addLink($('.primary-cta'), 'Download CV', 'fas fa-file-download');
+        items.push({
+            label: 'Email aatmajsalunke@yahoo.com', hint: 'Email', icon: 'fas fa-envelope',
+            run: function () { window.location.href = 'mailto:aatmajsalunke@yahoo.com'; }
+        });
+        items.push({
+            label: 'Toggle light / dark theme', hint: 'Action', icon: 'fas fa-adjust',
+            run: function () { toggleTheme(); }
+        });
+
+        let results = [];
+        let active = 0;
+        let lastFocus = null;
+
+        const render = function () {
+            const q = input.value;
+            results = items.map(function (item) {
+                const m = fuzzyMatch(q, item.label) || (item.extra && fuzzyMatch(q, item.extra) ? { score: 1, hits: [] } : null);
+                return m ? { item: item, score: m.score, hits: m.hits } : null;
+            }).filter(Boolean);
+            if (q.trim()) results.sort(function (a, b) { return b.score - a.score; });
+            active = Math.min(active, Math.max(0, results.length - 1));
+            list.textContent = '';
+            if (!results.length) {
+                const empty = document.createElement('li');
+                empty.className = 'cmdk-empty';
+                empty.textContent = 'Nothing matches "' + q.trim() + '"';
+                list.appendChild(empty);
+                input.removeAttribute('aria-activedescendant');
+                return;
+            }
+            results.forEach(function (r, i) {
+                const li = document.createElement('li');
+                li.className = 'cmdk-item';
+                li.id = 'cmdk-opt-' + i;
+                li.setAttribute('role', 'option');
+                li.setAttribute('aria-selected', String(i === active));
+                const icon = document.createElement('i');
+                icon.className = r.item.icon;
+                icon.setAttribute('aria-hidden', 'true');
+                const label = document.createElement('span');
+                label.className = 'cmdk-label';
+                const hits = new Set(r.hits);
+                Array.from(r.item.label).forEach(function (ch, k) {
+                    if (hits.has(k)) {
+                        const mark = document.createElement('mark');
+                        mark.textContent = ch;
+                        label.appendChild(mark);
+                    } else {
+                        label.appendChild(document.createTextNode(ch));
+                    }
+                });
+                const hint = document.createElement('span');
+                hint.className = 'cmdk-hint';
+                hint.textContent = r.item.hint;
+                li.append(icon, label, hint);
+                li.addEventListener('mousemove', function () {
+                    if (active !== i) setActive(i);
+                });
+                li.addEventListener('click', function () { choose(i); });
+                list.appendChild(li);
+            });
+            input.setAttribute('aria-activedescendant', 'cmdk-opt-' + active);
+        };
+
+        const setActive = function (i) {
+            const items = $$('.cmdk-item', list);
+            if (!items.length) return;
+            active = (i + items.length) % items.length;
+            items.forEach(function (el, k) { el.setAttribute('aria-selected', String(k === active)); });
+            input.setAttribute('aria-activedescendant', 'cmdk-opt-' + active);
+            items[active].scrollIntoView({ block: 'nearest' });
+        };
+
+        const open = function () {
+            if (!dialog.hidden) return;
+            lastFocus = document.activeElement;
+            dialog.hidden = false;
+            root.classList.add('cmdk-open');
+            if (lenis) lenis.stop();
+            input.value = '';
+            active = 0;
+            render();
+            requestAnimationFrame(function () { dialog.classList.add('is-open'); });
+            input.focus();
+            if (trigger) trigger.setAttribute('aria-expanded', 'true');
+        };
+
+        const close = function (restoreFocus) {
+            if (dialog.hidden) return;
+            dialog.classList.remove('is-open');
+            root.classList.remove('cmdk-open');
+            if (lenis) lenis.start();
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            setTimeout(function () { dialog.hidden = true; }, prefersReduced ? 0 : 200);
+            if (restoreFocus !== false && lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+        };
+
+        const choose = function (i) {
+            const r = results[i];
+            if (!r) return;
+            close(false);
+            setTimeout(function () { r.item.run(); }, 60);
+        };
+
+        input.addEventListener('input', function () {
+            active = 0;
+            render();
+        });
+        input.addEventListener('keydown', function (e) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                setActive(active + 1);
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                setActive(active - 1);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                choose(active);
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                close();
+            } else if (e.key === 'Tab') {
+                // keep focus inside the dialog
+                e.preventDefault();
+            }
+        });
+        $$('[data-cmdk-close]', dialog).forEach(function (el) { el.addEventListener('click', function () { close(); }); });
+        if (trigger) trigger.addEventListener('click', open);
+        document.addEventListener('keydown', function (e) {
+            if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+                e.preventDefault();
+                if (dialog.hidden) open();
+                else close();
+            }
+        });
+    }
+
+    // ============================================
     // BUTTON RIPPLE
     // ============================================
     function initRipple() {
@@ -993,16 +1272,26 @@
     }
 
     function initConsole() {
-        console.log('%c👋 Hello! Thanks for checking out my portfolio!', 'color: #6366f1; font-size: 16px; font-weight: bold;');
+        const logo = [
+            '   █████╗      ██╗',
+            '  ██╔══██╗     ██║',
+            '  ███████║     ██║',
+            '  ██╔══██║██   ██║',
+            '  ██║  ██║╚█████╔╝',
+            '  ╚═╝  ╚═╝ ╚════╝ '
+        ].join('\n');
+        console.log('%c' + logo, 'color:#8b5cf6;font-family:monospace;font-size:12px;line-height:1.1;text-shadow:0 0 8px rgba(139,92,246,.6)');
+        console.log('%cHey there, fellow dev 👋', 'color:#ec4899;font-size:15px;font-weight:bold');
+        console.log('%cThis site is plain HTML, CSS and JS: no framework, no build step. Press Ctrl/⌘ + K to jump anywhere.\nLike what you see? aatmajsalunke@yahoo.com', 'color:#6366f1;font-size:12px');
     }
 
     // ============================================
     // BOOT: each feature fails on its own without breaking the rest
     // ============================================
     [
-        initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
+        initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor, initThemeToggle,
         initTitles, initTyping, initBook, initPubCards, initPubTabs, initHero, initCards, initTimeline, initProjects,
-        initRipple, initFooter, initConsole
+        initCommandPalette, initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
             init();

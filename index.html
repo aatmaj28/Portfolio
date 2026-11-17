@@ -67,7 +67,10 @@
                 <li><a href="#contact">Contact</a></li>
             </ul>
             <div class="navbar-actions">
-                <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <button class="theme-toggle cmdk-trigger" id="cmdkTrigger" type="button" aria-label="Search and jump (Ctrl or Command + K)" aria-keyshortcuts="Control+K Meta+K" aria-haspopup="dialog" aria-controls="cmdk" aria-expanded="false" title="Search (Ctrl/⌘ K)">
+                    <i class="fas fa-search" aria-hidden="true"></i>
+                </button>
+                <button class="theme-toggle" id="themeToggle" type="button" aria-label="Toggle theme">
                     <i class="fas fa-moon" id="themeIcon"></i>
                 </button>
                 <button class="menu-btn" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="site-menu">
@@ -1385,6 +1388,25 @@
         <span>Created By <a href="https://www.linkedin.com/in/aatmaj-salunke-7106041b0/">Aatmaj Amol Salunke</a> | <span class="far fa-copyright"></span> <span id="footerYear">2026</span> All rights reserved.</span>
     </footer>
 
+    <!-- Command palette (Cmd/Ctrl + K) -->
+    <div class="cmdk" id="cmdk" role="dialog" aria-modal="true" aria-labelledby="cmdk-title" hidden>
+        <div class="cmdk-backdrop" data-cmdk-close></div>
+        <div class="cmdk-panel" data-lenis-prevent>
+            <h2 id="cmdk-title" class="sr-only">Jump to a section, project or link</h2>
+            <div class="cmdk-input-row">
+                <i class="fas fa-search" aria-hidden="true"></i>
+                <input id="cmdk-input" type="text" role="combobox" aria-expanded="true" aria-controls="cmdk-list" aria-autocomplete="list" aria-label="Search sections, projects and links" placeholder="Jump to a section, project or link" autocomplete="off" spellcheck="false">
+                <kbd>Esc</kbd>
+            </div>
+            <ul id="cmdk-list" class="cmdk-list" role="listbox" aria-label="Results"></ul>
+            <div class="cmdk-foot" aria-hidden="true">
+                <span><kbd>↑</kbd> <kbd>↓</kbd> to move</span>
+                <span><kbd>↵</kbd> to open</span>
+                <span><kbd class="cmdk-mod">Ctrl</kbd> <kbd>K</kbd> to toggle</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Confirmation Modal -->
     <div id="confirmationModal" class="modal">
         <div class="modal-content">
@@ -1515,55 +1537,7 @@
         })
     </script>
 
-    <!-- Theme Toggle Script (the theme itself is set in <head> before the page paints) -->
-    <script>
-        (function () {
-            const themeToggle = document.getElementById('themeToggle');
-            const themeIcon = document.getElementById('themeIcon');
-            const html = document.documentElement;
-
-            const setIcon = function (theme) {
-                themeIcon.classList.toggle('fa-sun', theme === 'light');
-                themeIcon.classList.toggle('fa-moon', theme !== 'light');
-            };
-            const savedTheme = function () {
-                try { return localStorage.getItem('theme'); } catch (e) { return null; }
-            };
-
-            setIcon(html.getAttribute('data-theme'));
-
-            // Toggle theme on button click
-            themeToggle.addEventListener('click', function () {
-                const newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-
-                html.setAttribute('data-theme', newTheme);
-                try { localStorage.setItem('theme', newTheme); } catch (e) {}
-
-                // Update icon with animation
-                themeIcon.style.transform = 'rotate(360deg) scale(0)';
-                setTimeout(() => {
-                    setIcon(newTheme);
-                    themeIcon.style.transform = 'rotate(0deg) scale(1)';
-                }, 150);
-            });
-
-            // Follow OS theme changes until the visitor picks a theme themselves
-            if (window.matchMedia) {
-                const media = window.matchMedia('(prefers-color-scheme: light)');
-                const follow = function (event) {
-                    if (savedTheme()) return;
-                    const theme = event.matches ? 'light' : 'dark';
-                    html.setAttribute('data-theme', theme);
-                    setIcon(theme);
-                };
-                if (media.addEventListener) {
-                    media.addEventListener('change', follow);
-                } else if (media.addListener) {
-                    media.addListener(follow);
-                }
-            }
-        })();
-    </script>
+    <!-- The theme toggle lives in script.js; the theme itself is set in <head> before the page paints -->
 </body>
 
 </html>

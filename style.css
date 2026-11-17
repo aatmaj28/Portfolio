@@ -5074,3 +5074,216 @@ section[tabindex="-1"]:focus {
         grid-area: auto;
     }
 }
+
+/* ============================================
+   REDESIGN 2026: COMMAND PALETTE, THEME REVEAL, NAV SEARCH BUTTON
+   ============================================ */
+
+/* Nav: tighter spacing so the search button fits next to the theme toggle */
+.navbar-actions {
+    gap: 12px;
+}
+
+.navbar .menu li a {
+    padding: 8px 8px;
+}
+
+/* Circular reveal between themes: the new page grows from the toggle */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none;
+    mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+    z-index: 9999;
+}
+
+/* Quick glow on a card after jumping to it */
+.glass.is-flash::after {
+    animation: cardFlash 1.6s ease;
+}
+
+@keyframes cardFlash {
+    0%, 100% { opacity: 0; }
+    25%, 60% { opacity: 1; }
+}
+
+.cmdk-open,
+.cmdk-open body {
+    overflow: hidden;
+}
+
+.cmdk {
+    position: fixed;
+    inset: 0;
+    z-index: 10002;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 12vh 16px 16px;
+}
+
+.cmdk-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.6);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.cmdk.is-open .cmdk-backdrop {
+    opacity: 1;
+}
+
+.cmdk-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(640px, 100%);
+    max-height: min(560px, 76vh);
+    overflow: hidden;
+    border-radius: 20px;
+    background: var(--glass-bg-solid);
+    border: 1px solid rgba(139, 92, 246, 0.35);
+    box-shadow: 0 30px 80px rgba(2, 6, 23, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset;
+    opacity: 0;
+    transform: translateY(-10px) scale(0.97);
+    transition: opacity 0.2s ease, transform 0.3s var(--ease-out);
+}
+
+.cmdk.is-open .cmdk-panel {
+    opacity: 1;
+    transform: none;
+}
+
+.cmdk-input-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 18px;
+    border-bottom: 1px solid var(--glass-border);
+    color: var(--text-sub);
+}
+
+.cmdk-input-row input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    outline: none;
+    color: var(--text-main);
+    font-family: 'Sora', sans-serif;
+    font-size: 17px;
+}
+
+.cmdk-input-row input::placeholder {
+    color: var(--text-sub);
+    opacity: 0.8;
+}
+
+.cmdk kbd {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 6px;
+    border: 1px solid var(--glass-border);
+    background: rgba(148, 163, 184, 0.12);
+    color: var(--text-sub);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.cmdk-list {
+    flex: 1;
+    margin: 0;
+    padding: 8px;
+    list-style: none;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+.cmdk-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    color: var(--text-main);
+    cursor: pointer;
+}
+
+.cmdk-item > i {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9px;
+    background: rgba(99, 102, 241, 0.14);
+    color: #a78bfa;
+    font-size: 14px;
+}
+
+[data-theme="light"] .cmdk-item > i {
+    color: #6d28d9;
+}
+
+.cmdk-item[aria-selected="true"] {
+    background: rgba(99, 102, 241, 0.16);
+    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, 0.4);
+}
+
+.cmdk-label {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 15px;
+}
+
+.cmdk-label mark {
+    background: none;
+    color: #c4b5fd;
+    font-weight: 700;
+}
+
+[data-theme="light"] .cmdk-label mark {
+    color: #6d28d9;
+}
+
+.cmdk-hint {
+    flex-shrink: 0;
+    font-size: 12px;
+    color: var(--text-sub);
+}
+
+.cmdk-empty {
+    padding: 28px 12px;
+    text-align: center;
+    color: var(--text-sub);
+}
+
+.cmdk-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--glass-border);
+    font-size: 12px;
+    color: var(--text-sub);
+}
+
+@media (max-width: 640px) {
+    .cmdk {
+        padding-top: 8vh;
+    }
+
+    .cmdk-foot {
+        display: none;
+    }
+}
