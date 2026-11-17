@@ -796,6 +796,110 @@
     }
 
     // ============================================
+    // PROJECTS: filter chips, show all, animated reflow (FLIP with transforms)
+    // ============================================
+    let projects = null;
+
+    function initProjects() {
+        const grid = $('.project-grid');
+        if (!grid) return;
+        const cards = $$('.project-card', grid);
+        const chips = $$('.project-filters .chip');
+        const moreWrap = $('.project-more');
+        const moreBtn = moreWrap ? moreWrap.querySelector('button') : null;
+        const status = $('.project-status');
+        const limit = cards.filter(function (c) { return !c.classList.contains('is-extra'); }).length;
+        const ease = 'cubic-bezier(0.2, 0.7, 0.2, 1)';
+        let filter = 'all';
+        let expanded = false;
+
+        const matches = function (card) {
+            return filter === 'all' || card.dataset.tags.split(' ').indexOf(filter) > -1;
+        };
+
+        const apply = function (animate) {
+            const before = new Map();
+            if (animate) {
+                cards.forEach(function (c) { if (!c.hidden) before.set(c, c.getBoundingClientRect()); });
+            }
+            let total = 0, shown = 0;
+            cards.forEach(function (c) {
+                const match = matches(c);
+                if (match) total += 1;
+                const visible = match && (filter !== 'all' || expanded || total <= limit);
+                c.hidden = !visible;
+                c.classList.remove('is-extra');
+                if (visible) shown += 1;
+            });
+            if (status) status.textContent = 'Showing ' + shown + ' of ' + total + ' project' + (total === 1 ? '' : 's');
+            if (moreWrap) moreWrap.hidden = filter !== 'all';
+            if (moreBtn) {
+                moreBtn.setAttribute('aria-expanded', String(expanded));
+                moreBtn.classList.toggle('is-open', expanded);
+                moreBtn.firstChild.textContent = expanded ? 'Show fewer projects ' : 'Show all projects ';
+            }
+            if (!animate || prefersReduced) {
+                cards.forEach(function (c) { if (!c.hidden && !before.has(c) && animate) c.classList.add('is-in'); });
+                return;
+            }
+            let order = 0;
+            cards.forEach(function (c) {
+                if (c.hidden) return;
+                const prev = before.get(c);
+                const now = c.getBoundingClientRect();
+                if (prev) {
+                    const dx = prev.left - now.left, dy = prev.top - now.top;
+                    if (Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+                        c.animate([{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: 520, easing: ease });
+                    }
+                } else {
+                    c.classList.add('is-in');
+                    c.animate([
+                        { opacity: 0, transform: 'translateY(18px) scale(0.97)' },
+                        { opacity: 1, transform: 'none' }
+                    ], { duration: 480, delay: Math.min(order * 45, 450), easing: ease, fill: 'backwards' });
+                    order += 1;
+                }
+            });
+        };
+
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                if (chip.dataset.filter === filter) return;
+                filter = chip.dataset.filter;
+                chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c === chip)); });
+                apply(true);
+            });
+        });
+
+        if (moreBtn) {
+            moreBtn.addEventListener('click', function () {
+                expanded = !expanded;
+                apply(true);
+                if (!expanded) {
+                    // Collapsing shortens the page a lot; bring the button back into view
+                    const r = moreBtn.getBoundingClientRect();
+                    if (r.top < 0 || r.bottom > window.innerHeight) scrollToElement(grid, false);
+                }
+            });
+        }
+
+        apply(false);
+
+        projects = {
+            // Make sure a card is on screen (used by the command palette)
+            reveal: function (card) {
+                if (!card.hidden) return;
+                filter = 'all';
+                expanded = true;
+                chips.forEach(function (c) { c.setAttribute('aria-pressed', String(c.dataset.filter === 'all')); });
+                apply(false);
+                card.classList.add('is-in');
+            }
+        };
+    }
+
+    // ============================================
     // CAROUSELS (Owl, still used by some sections)
     // ============================================
     function initCarousels() {
@@ -849,7 +953,7 @@
     // ============================================
     [
         initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
-        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initTimeline, initCarousels,
+        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initTimeline, initProjects, initCarousels,
         initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
