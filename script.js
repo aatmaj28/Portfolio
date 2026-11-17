@@ -380,6 +380,9 @@
     function initHero() {
         const hero = $('.home');
         if (!hero) return;
+        const fontsReady = (document.fonts && document.fonts.ready)
+            ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1500); })])
+            : Promise.resolve();
 
         // Background layers drift a little slower than the page
         const layers = $$('.home .animated-bg, .home .particles-container');
@@ -389,137 +392,21 @@
             layers.forEach(function (el) { el.style.transform = 'translate3d(0,' + offset + 'px,0)'; });
         });
 
-        // Constellation canvas
-        const canvas = $('.constellation');
-        if (canvas) {
-            const ctx = canvas.getContext('2d');
-            const colors = ['99, 102, 241', '139, 92, 246', '236, 72, 153'];
-            const pointer = { x: null, y: null };
-            let particles = [];
-            let w = 0, h = 0;
-
-            const size = function () {
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                w = hero.offsetWidth;
-                h = hero.offsetHeight;
-                canvas.width = w * dpr;
-                canvas.height = h * dpr;
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                const count = Math.min(Math.floor((w * h) / 22000), 80);
-                particles = Array.from({ length: count }, function () {
-                    return {
-                        x: Math.random() * w,
-                        y: Math.random() * h,
-                        vx: (Math.random() - 0.5) * 0.35,
-                        vy: (Math.random() - 0.5) * 0.35,
-                        r: Math.random() * 1.6 + 0.8,
-                        c: colors[Math.floor(Math.random() * colors.length)]
-                    };
-                });
-            };
-
-            const draw = function () {
-                ctx.clearRect(0, 0, w, h);
-                const linkDist = 120;
-                for (let i = 0; i < particles.length; i++) {
-                    const p = particles[i];
-                    p.x += p.vx;
-                    p.y += p.vy;
-                    if (p.x < 0 || p.x > w) p.vx *= -1;
-                    if (p.y < 0 || p.y > h) p.vy *= -1;
-                    if (pointer.x !== null) {
-                        const dx = p.x - pointer.x, dy = p.y - pointer.y;
-                        const dist = Math.hypot(dx, dy);
-                        if (dist > 0.1 && dist < 110) {
-                            p.x += (dx / dist) * 0.7;
-                            p.y += (dy / dist) * 0.7;
-                        }
-                    }
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(' + p.c + ', 0.55)';
-                    ctx.fill();
-                    for (let j = i + 1; j < particles.length; j++) {
-                        const q = particles[j];
-                        const dist = Math.hypot(p.x - q.x, p.y - q.y);
-                        if (dist < linkDist) {
-                            ctx.beginPath();
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(q.x, q.y);
-                            ctx.strokeStyle = 'rgba(99, 102, 241, ' + (0.18 * (1 - dist / linkDist)).toFixed(3) + ')';
-                            ctx.lineWidth = 1;
-                            ctx.stroke();
-                        }
-                    }
-                    if (pointer.x !== null) {
-                        const dist = Math.hypot(p.x - pointer.x, p.y - pointer.y);
-                        if (dist < 170) {
-                            ctx.beginPath();
-                            ctx.moveTo(p.x, p.y);
-                            ctx.lineTo(pointer.x, pointer.y);
-                            ctx.strokeStyle = 'rgba(236, 72, 153, ' + (0.25 * (1 - dist / 170)).toFixed(3) + ')';
-                            ctx.lineWidth = 1;
-                            ctx.stroke();
-                        }
-                    }
+        // Scroll hint fades out after the first scroll
+        const cue = $('.scroll-cue');
+        if (cue) {
+            const hideCue = function (y) {
+                if (y > 40) {
+                    cue.classList.add('is-hidden');
+                    const i = scrollTasks.indexOf(hideCue);
+                    if (i > -1) scrollTasks.splice(i, 1);
                 }
             };
-
-            size();
-            if (prefersReduced) {
-                draw();
-            } else {
-                let rafId = null;
-                const loop = function () {
-                    draw();
-                    rafId = requestAnimationFrame(loop);
-                };
-                new IntersectionObserver(function (entries) {
-                    if (entries[0].isIntersecting && rafId === null) rafId = requestAnimationFrame(loop);
-                    else if (!entries[0].isIntersecting && rafId !== null) {
-                        cancelAnimationFrame(rafId);
-                        rafId = null;
-                    }
-                }).observe(hero);
-                hero.addEventListener('pointermove', function (e) {
-                    const rect = hero.getBoundingClientRect();
-                    pointer.x = e.clientX - rect.left;
-                    pointer.y = e.clientY - rect.top;
-                });
-                hero.addEventListener('pointerleave', function () {
-                    pointer.x = null;
-                    pointer.y = null;
-                });
-                let resizeTimer;
-                window.addEventListener('resize', function () {
-                    clearTimeout(resizeTimer);
-                    resizeTimer = setTimeout(size, 200);
-                });
-            }
+            scrollTasks.push(hideCue);
         }
 
-        // Name reveal, letter by letter
-        const nameEl = $('.home .text-2');
-        if (nameEl && !prefersReduced) {
-            const nameText = nameEl.textContent.trim();
-            nameEl.setAttribute('aria-label', nameText);
-            nameEl.textContent = '';
-            const frag = document.createDocumentFragment();
-            Array.from(nameText).forEach(function (chr, i) {
-                const span = document.createElement('span');
-                span.className = 'ch';
-                span.textContent = chr;
-                span.setAttribute('aria-hidden', 'true');
-                span.style.setProperty('--d', (0.35 + i * 0.045) + 's');
-                frag.appendChild(span);
-            });
-            nameEl.appendChild(frag);
-            nameEl.classList.add('split');
-            const paintName = function () { paintGradient($$('.ch', nameEl)); };
-            paintName();
-            if (document.fonts && document.fonts.ready) document.fonts.ready.then(paintName);
-            window.addEventListener('resize', paintName);
-        }
+        initConstellation(hero);
+        initNameDecode(fontsReady);
 
         // 3D parallax layers, cursor spotlight and magnetic buttons
         if (finePointer && !prefersReduced) {
@@ -556,25 +443,266 @@
             });
         }
 
-        // Animated stat counters
+        // Stat counters: widths are locked first so counting never shifts the layout
         const statNums = $$('.stat-num');
         if (statNums.length && !prefersReduced) {
-            const runCounter = function (el) {
-                const target = parseFloat(el.dataset.count);
-                const decimals = parseInt(el.dataset.decimals || '0', 10);
-                const suffix = el.dataset.suffix || '';
-                const duration = 1400;
-                const start = performance.now();
-                const tick = function (now) {
-                    const p = Math.min((now - start) / duration, 1);
-                    const eased = 1 - Math.pow(1 - p, 3);
-                    el.textContent = (target * eased).toFixed(decimals) + (p === 1 ? suffix : '');
-                    if (p < 1) requestAnimationFrame(tick);
+            fontsReady.then(function () {
+                statNums.forEach(function (el) {
+                    el.style.minWidth = Math.ceil(el.getBoundingClientRect().width) + 'px';
+                });
+                const run = function (el) {
+                    const target = parseFloat(el.dataset.count);
+                    const decimals = parseInt(el.dataset.decimals || '0', 10);
+                    const suffix = el.dataset.suffix || '';
+                    const duration = 1500;
+                    const start = performance.now();
+                    const tick = function (now) {
+                        const p = Math.min((now - start) / duration, 1);
+                        const eased = 1 - Math.pow(1 - p, 3);
+                        el.textContent = (target * eased).toFixed(decimals) + suffix;
+                        if (p < 1) requestAnimationFrame(tick);
+                    };
+                    requestAnimationFrame(tick);
                 };
-                requestAnimationFrame(tick);
-            };
-            setTimeout(function () { statNums.forEach(runCounter); }, 800);
+                setTimeout(function () { statNums.forEach(run); }, 500);
+            });
         }
+    }
+
+    // Constellation: particles at different depths drift slowly, link up when close,
+    // and lean toward the cursor, where their lines light up.
+    function initConstellation(hero) {
+        const canvas = $('.constellation');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const palette = ['99, 102, 241', '139, 92, 246', '236, 72, 153'];
+        const pointer = { x: 0, y: 0, sx: 0, sy: 0, active: false };
+        let particles = [];
+        let w = 0, h = 0, small = false;
+
+        const size = function () {
+            small = window.innerWidth < 768;
+            const dpr = Math.min(window.devicePixelRatio || 1, small ? 1.5 : 2);
+            w = hero.offsetWidth;
+            h = hero.offsetHeight;
+            canvas.width = Math.round(w * dpr);
+            canvas.height = Math.round(h * dpr);
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            const count = clamp(Math.floor((w * h) / (small ? 15000 : 12500)), 24, small ? 48 : 120);
+            particles = Array.from({ length: count }, function () {
+                const z = 0.25 + Math.random() * 0.75;
+                return {
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    z: z,
+                    vx: (Math.random() - 0.5) * 0.24 * z,
+                    vy: (Math.random() - 0.5) * 0.24 * z,
+                    r: 0.6 + z * 1.8,
+                    phase: Math.random() * Math.PI * 2,
+                    c: palette[Math.floor(Math.random() * palette.length)],
+                    dx: 0,
+                    dy: 0
+                };
+            });
+            pointer.sx = pointer.x = w / 2;
+            pointer.sy = pointer.y = h / 2;
+        };
+
+        const draw = function (time) {
+            ctx.clearRect(0, 0, w, h);
+            pointer.sx += (pointer.x - pointer.sx) * 0.08;
+            pointer.sy += (pointer.y - pointer.sy) * 0.08;
+            const linkDist = small ? 105 : 135;
+            const linkDist2 = linkDist * linkDist;
+            const reach = small ? 140 : 190;
+            const reach2 = reach * reach;
+            const offX = pointer.active ? (pointer.sx - w / 2) : 0;
+            const offY = pointer.active ? (pointer.sy - h / 2) : 0;
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                p.x += p.vx + Math.sin(time * 0.0003 + p.phase) * 0.06 * p.z;
+                p.y += p.vy + Math.cos(time * 0.00025 + p.phase) * 0.06 * p.z;
+                if (p.x < -20) p.x = w + 20;
+                else if (p.x > w + 20) p.x = -20;
+                if (p.y < -20) p.y = h + 20;
+                else if (p.y > h + 20) p.y = -20;
+                if (pointer.active) {
+                    const ddx = pointer.x - p.x, ddy = pointer.y - p.y;
+                    const d2 = ddx * ddx + ddy * ddy;
+                    if (d2 < reach2) {
+                        const f = (1 - Math.sqrt(d2) / reach) * 0.01 * p.z;
+                        p.x += ddx * f;
+                        p.y += ddy * f;
+                    }
+                }
+                // nearer particles shift more with the cursor: a cheap depth effect
+                p.dx = p.x - offX * 0.035 * p.z;
+                p.dy = p.y - offY * 0.035 * p.z;
+            }
+
+            ctx.lineCap = 'round';
+            for (let i = 0; i < particles.length; i++) {
+                const a = particles[i];
+                for (let j = i + 1; j < particles.length; j++) {
+                    const b = particles[j];
+                    const dx = a.dx - b.dx, dy = a.dy - b.dy;
+                    const d2 = dx * dx + dy * dy;
+                    if (d2 > linkDist2) continue;
+                    const d = Math.sqrt(d2);
+                    let alpha = (1 - d / linkDist) * 0.22 * Math.min(a.z, b.z);
+                    let width = 0.8;
+                    if (pointer.active) {
+                        const mx = (a.dx + b.dx) / 2 - pointer.sx, my = (a.dy + b.dy) / 2 - pointer.sy;
+                        const m2 = mx * mx + my * my;
+                        if (m2 < reach2) {
+                            const boost = 1 - Math.sqrt(m2) / reach;
+                            alpha *= 1 + boost * 2.6;
+                            width += boost * 0.8;
+                        }
+                    }
+                    ctx.beginPath();
+                    ctx.moveTo(a.dx, a.dy);
+                    ctx.lineTo(b.dx, b.dy);
+                    ctx.strokeStyle = 'rgba(139, 92, 246, ' + Math.min(alpha, 0.6).toFixed(3) + ')';
+                    ctx.lineWidth = width;
+                    ctx.stroke();
+                }
+                if (pointer.active) {
+                    const cx = a.dx - pointer.sx, cy = a.dy - pointer.sy;
+                    const c2 = cx * cx + cy * cy;
+                    if (c2 < reach2 && a.z > 0.45) {
+                        ctx.beginPath();
+                        ctx.moveTo(a.dx, a.dy);
+                        ctx.lineTo(pointer.sx, pointer.sy);
+                        ctx.strokeStyle = 'rgba(236, 72, 153, ' + ((1 - Math.sqrt(c2) / reach) * 0.3 * a.z).toFixed(3) + ')';
+                        ctx.lineWidth = 0.8;
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            for (let i = 0; i < particles.length; i++) {
+                const p = particles[i];
+                const twinkle = 0.75 + 0.25 * Math.sin(time * 0.002 + p.phase);
+                const alpha = (0.25 + 0.55 * p.z) * twinkle;
+                if (p.z > 0.8) {
+                    ctx.beginPath();
+                    ctx.arc(p.dx, p.dy, p.r * 3, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(' + p.c + ', ' + (alpha * 0.12).toFixed(3) + ')';
+                    ctx.fill();
+                }
+                ctx.beginPath();
+                ctx.arc(p.dx, p.dy, p.r, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(' + p.c + ', ' + alpha.toFixed(3) + ')';
+                ctx.fill();
+            }
+        };
+
+        size();
+        if (prefersReduced) {
+            draw(0);
+            return;
+        }
+        let rafId = null;
+        const loop = function (time) {
+            draw(time);
+            rafId = requestAnimationFrame(loop);
+        };
+        new IntersectionObserver(function (entries) {
+            if (entries[0].isIntersecting && rafId === null) rafId = requestAnimationFrame(loop);
+            else if (!entries[0].isIntersecting && rafId !== null) {
+                cancelAnimationFrame(rafId);
+                rafId = null;
+            }
+        }).observe(hero);
+        hero.addEventListener('pointermove', function (e) {
+            if (e.pointerType !== 'mouse') return;
+            const rect = hero.getBoundingClientRect();
+            pointer.x = e.clientX - rect.left;
+            pointer.y = e.clientY - rect.top;
+            pointer.active = true;
+        });
+        hero.addEventListener('pointerleave', function () { pointer.active = false; });
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(size, 200);
+        });
+    }
+
+    // Name decode: letters scramble through random glyphs, then settle left to right.
+    // Each letter's width is fixed first, so the scramble never moves the layout.
+    function initNameDecode(fontsReady) {
+        const nameEl = $('.home .text-2');
+        if (!nameEl) return;
+        const nameText = nameEl.textContent.trim();
+        nameEl.setAttribute('aria-label', nameText);
+        if (prefersReduced) return;
+
+        nameEl.textContent = '';
+        const chars = [];
+        nameText.split(' ').forEach(function (word, wi) {
+            if (wi) {
+                const space = document.createElement('span');
+                space.className = 'ch ch-space';
+                space.textContent = ' ';
+                space.setAttribute('aria-hidden', 'true');
+                nameEl.appendChild(space);
+                chars.push(space);
+            }
+            const wordEl = document.createElement('span');
+            wordEl.className = 'name-word';
+            wordEl.setAttribute('aria-hidden', 'true');
+            Array.from(word).forEach(function (chr) {
+                const span = document.createElement('span');
+                span.className = 'ch';
+                span.textContent = chr;
+                wordEl.appendChild(span);
+                chars.push(span);
+            });
+            nameEl.appendChild(wordEl);
+        });
+        nameEl.classList.add('split');
+
+        const finals = chars.map(function (s) { return s.textContent; });
+        const lock = function () {
+            chars.forEach(function (s) { s.style.width = ''; });
+            const widths = chars.map(function (s) { return s.getBoundingClientRect().width; });
+            chars.forEach(function (s, i) { s.style.width = widths[i] + 'px'; });
+            paintGradient(chars);
+        };
+        lock();
+        window.addEventListener('resize', lock);
+
+        fontsReady.then(function () {
+            lock();
+            const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=<>/';
+            const start = performance.now();
+            let lastSwap = 0;
+            chars.forEach(function (s, i) { if (finals[i] !== ' ') s.classList.add('scrambling'); });
+            const tick = function (now) {
+                const t = now - start;
+                let pending = false;
+                const swap = now - lastSwap > 45;
+                if (swap) lastSwap = now;
+                chars.forEach(function (s, i) {
+                    if (finals[i] === ' ') return;
+                    if (t >= 200 + i * 55) {
+                        if (s.classList.contains('scrambling')) {
+                            s.textContent = finals[i];
+                            s.classList.remove('scrambling');
+                        }
+                    } else {
+                        pending = true;
+                        if (swap) s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+                    }
+                });
+                if (pending) requestAnimationFrame(tick);
+                else nameEl.classList.add('decoded');
+            };
+            requestAnimationFrame(tick);
+        });
     }
 
     // ============================================
