@@ -40,11 +40,24 @@
     // ============================================
     let lenis = null;
 
+    // Lenis only helps mouse and trackpad scrolling, so phones never download it
     function initSmoothScroll() {
-        if (prefersReduced || typeof window.Lenis !== 'function') return;
-        lenis = new window.Lenis({ autoRaf: true, lerp: 0.1, allowNestedScroll: true, stopInertiaOnNavigate: true });
-        root.classList.add('has-lenis');
-        window.__lenis = lenis;
+        if (prefersReduced || !finePointer) return;
+        const start = function () {
+            if (lenis || typeof window.Lenis !== 'function') return;
+            lenis = new window.Lenis({ autoRaf: true, lerp: 0.1, allowNestedScroll: true, stopInertiaOnNavigate: true });
+            root.classList.add('has-lenis');
+            window.__lenis = lenis;
+        };
+        if (typeof window.Lenis === 'function') {
+            start();
+            return;
+        }
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/lenis@1.3.27/dist/lenis.min.js';
+        script.async = true;
+        script.onload = start;
+        document.head.appendChild(script);
     }
 
     function navOffset() {
@@ -600,22 +613,25 @@
         };
 
         size();
-        if (prefersReduced) {
-            draw(0);
-            return;
-        }
+        // Paint one still frame right away; the animation starts once the page has finished loading
+        draw(0);
+        if (prefersReduced) return;
         let rafId = null;
         const loop = function (time) {
             draw(time);
             rafId = requestAnimationFrame(loop);
         };
-        new IntersectionObserver(function (entries) {
-            if (entries[0].isIntersecting && rafId === null) rafId = requestAnimationFrame(loop);
-            else if (!entries[0].isIntersecting && rafId !== null) {
-                cancelAnimationFrame(rafId);
-                rafId = null;
-            }
-        }).observe(hero);
+        const begin = function () {
+            new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting && rafId === null) rafId = requestAnimationFrame(loop);
+                else if (!entries[0].isIntersecting && rafId !== null) {
+                    cancelAnimationFrame(rafId);
+                    rafId = null;
+                }
+            }).observe(hero);
+        };
+        if (document.readyState === 'complete') setTimeout(begin, 600);
+        else window.addEventListener('load', function () { setTimeout(begin, 600); }, { once: true });
         hero.addEventListener('pointermove', function (e) {
             if (e.pointerType !== 'mouse') return;
             const rect = hero.getBoundingClientRect();
@@ -1286,18 +1302,35 @@
     }
 
     // ============================================
-    // BOOT: each feature fails on its own without breaking the rest
+    // BOOT: each feature fails on its own without breaking the rest.
+    // What the first screen needs runs right away; everything else runs in
+    // small idle chunks so no single task blocks the page while it loads.
     // ============================================
-    [
-        initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor, initThemeToggle,
-        initTitles, initTyping, initBook, initPubCards, initPubTabs, initHero, initCards, initTimeline, initProjects,
-        initCommandPalette, initRipple, initFooter, initConsole
-    ].forEach(function (init) {
+    const run = function (init) {
         try {
             init();
         } catch (err) {
             console.error('Init failed: ' + init.name, err);
         }
-    });
+    };
+    [initReveal, initAnchors, initNavbar, initProgress, initThemeToggle, initHero, initTyping].forEach(run);
     requestScrollTasks();
+
+    const later = [
+        initSmoothScroll, initCursor, initTitles, initBook, initPubCards, initPubTabs, initCards,
+        initTimeline, initProjects, initCommandPalette, initRipple, initFooter, initConsole
+    ];
+    const schedule = window.requestIdleCallback
+        ? function (cb) { window.requestIdleCallback(cb, { timeout: 400 }); }
+        : function (cb) { setTimeout(cb, 16); };
+    const next = function () {
+        const init = later.shift();
+        if (!init) {
+            requestScrollTasks();
+            return;
+        }
+        run(init);
+        schedule(next);
+    };
+    schedule(next);
 })();

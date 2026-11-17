@@ -5287,3 +5287,58 @@ section[tabindex="-1"]:focus {
         display: none;
     }
 }
+
+/* ============================================
+   REDESIGN 2026: PERFORMANCE
+   ============================================ */
+
+/* Font Awesome loads without blocking the first paint, so icons that are on
+   screen at load get a fixed box and nothing moves when the icon font arrives */
+.home .home-content .hero-links a i {
+    display: inline-block;
+    width: 1.15em;
+    text-align: center;
+}
+
+.navbar-actions .menu-btn {
+    width: 36px;
+    height: 36px;
+    text-align: center;
+}
+
+.bitmoji-static picture {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+/* "Open to Work" dot pulses with a scaling ring (transform and opacity) instead of a box-shadow */
+.open-badge .badge-dot {
+    animation: none;
+    box-shadow: none;
+}
+
+.open-badge .badge-dot::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: #22c55e;
+    animation: nowPing 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* Only promote the card spotlight to its own layer while the card is hovered */
+.glass-spot {
+    will-change: auto;
+}
+
+.glass:hover .glass-spot {
+    will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .open-badge .badge-dot::after {
+        animation: none;
+        opacity: 0;
+    }
+}
