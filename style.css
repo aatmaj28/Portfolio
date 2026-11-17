@@ -4906,3 +4906,150 @@ section[tabindex="-1"]:focus {
 .project-card.is-featured .project-media img {
     object-position: 50% 30%;
 }
+
+/* ============================================
+   REDESIGN 2026: PUBLICATIONS TABS
+   ============================================ */
+
+.js .pub-panel.is-inactive {
+    display: none;
+}
+
+.pub-profile {
+    margin-top: -40px;
+}
+
+.pub-tabs {
+    position: relative;
+    display: flex;
+    width: max-content;
+    max-width: 100%;
+    margin: 30px auto 0;
+    padding: 6px;
+    gap: 4px;
+    border-radius: 999px;
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: inset 0 1px 0 var(--glass-highlight);
+}
+
+.pub-tab {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-sub);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.pub-tab:hover,
+.pub-tab[aria-selected="true"] {
+    color: var(--text-main);
+}
+
+/* Underline that slides and stretches to the active tab (transform only) */
+.pub-tab-ink {
+    position: absolute;
+    left: 0;
+    bottom: 5px;
+    width: 100px;
+    height: 3px;
+    border-radius: 3px;
+    background: var(--gradient-button);
+    box-shadow: 0 0 12px rgba(139, 92, 246, 0.7);
+    transform-origin: 0 50%;
+    transition: transform 0.45s var(--ease-out);
+    pointer-events: none;
+}
+
+.pub-panel:focus-visible {
+    outline-offset: 8px;
+    border-radius: 12px;
+}
+
+.pub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 28px;
+    padding-top: 36px;
+}
+
+.publications .pub-card {
+    height: 450px;
+}
+
+/* Glassier card faces */
+.pub-front {
+    background: linear-gradient(135deg, var(--glass-bg-solid) 0%, var(--glass-bg) 100%);
+    border-color: var(--glass-border);
+    box-shadow: var(--glass-shadow), inset 0 1px 0 var(--glass-highlight);
+}
+
+/* Shine that sweeps across a face on hover */
+.pub-shine {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.pub-shine::before {
+    content: '';
+    position: absolute;
+    top: -20%;
+    bottom: -20%;
+    left: -60%;
+    width: 45%;
+    background: linear-gradient(105deg, transparent, rgba(255, 255, 255, 0.14) 40%, rgba(255, 255, 255, 0.3) 50%, rgba(255, 255, 255, 0.14) 60%, transparent);
+    transform: translateX(-60%) skewX(-12deg);
+    transition: transform 1s var(--ease-out);
+}
+
+.pub-card:hover .pub-shine::before,
+.pub-card:focus-within .pub-shine::before {
+    transform: translateX(420%) skewX(-12deg);
+}
+
+@media (max-width: 1024px) {
+    .pub-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .pub-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 22px;
+    }
+
+    .publications .pub-card {
+        height: 420px;
+    }
+
+    .pub-tab {
+        padding: 9px 14px;
+        font-size: 14px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .pub-shine {
+        display: none;
+    }
+}
+
+/* Room for every paper title (the long ones already use their own size) */
+.publications .pub-card h3:not(.pub-title-long) {
+    -webkit-line-clamp: 4;
+}

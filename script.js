@@ -900,6 +900,71 @@
     }
 
     // ============================================
+    // PUBLICATION TABS: Published / Under Review with a sliding underline
+    // ============================================
+    function initPubTabs() {
+        const tabs = $$('.pub-tabs [role="tab"]');
+        if (!tabs.length) return;
+        const ink = $('.pub-tab-ink');
+        const panels = tabs.map(function (t) { return document.getElementById(t.getAttribute('aria-controls')); });
+        let current = Math.max(0, tabs.findIndex(function (t) { return t.getAttribute('aria-selected') === 'true'; }));
+
+        const moveInk = function () {
+            if (!ink) return;
+            const tab = tabs[current];
+            ink.style.transform = 'translateX(' + tab.offsetLeft + 'px) scaleX(' + (tab.offsetWidth / 100).toFixed(4) + ')';
+        };
+
+        const select = function (index, moveFocus) {
+            if (index === current) {
+                if (moveFocus) tabs[index].focus();
+                return;
+            }
+            current = index;
+            tabs.forEach(function (t, i) {
+                const on = i === index;
+                t.setAttribute('aria-selected', String(on));
+                t.tabIndex = on ? 0 : -1;
+                panels[i].hidden = !on;
+                panels[i].classList.remove('is-inactive');
+            });
+            moveInk();
+            if (moveFocus) tabs[index].focus();
+            $$('.pub-card', panels[index]).forEach(function (card, k) {
+                card.classList.add('is-in');
+                if (prefersReduced) return;
+                card.animate([
+                    { opacity: 0, transform: 'translateY(16px)' },
+                    { opacity: 1, transform: 'none' }
+                ], { duration: 450, delay: k * 60, easing: 'cubic-bezier(0.2, 0.7, 0.2, 1)', fill: 'backwards' });
+            });
+        };
+
+        tabs.forEach(function (tab, i) {
+            tab.addEventListener('click', function () { select(i, false); });
+            tab.addEventListener('keydown', function (e) {
+                let next = null;
+                if (e.key === 'ArrowRight') next = (i + 1) % tabs.length;
+                else if (e.key === 'ArrowLeft') next = (i - 1 + tabs.length) % tabs.length;
+                else if (e.key === 'Home') next = 0;
+                else if (e.key === 'End') next = tabs.length - 1;
+                if (next === null) return;
+                e.preventDefault();
+                select(next, true);
+            });
+        });
+
+        // The hidden panel starts with a class so it is hidden before JS runs; switch to the attribute now
+        panels.forEach(function (p, i) {
+            p.classList.remove('is-inactive');
+            p.hidden = i !== current;
+        });
+        moveInk();
+        if (document.fonts && document.fonts.ready) document.fonts.ready.then(moveInk);
+        window.addEventListener('resize', moveInk);
+    }
+
+    // ============================================
     // CAROUSELS (Owl, still used by some sections)
     // ============================================
     function initCarousels() {
@@ -953,7 +1018,7 @@
     // ============================================
     [
         initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
-        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initTimeline, initProjects, initCarousels,
+        initTitles, initTyping, initBook, initPubCards, initPubTabs, initHero, initCards, initTimeline, initProjects, initCarousels,
         initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
