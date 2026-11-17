@@ -761,6 +761,41 @@
     }
 
     // ============================================
+    // EXPERIENCE TIMELINE: the line draws itself as you scroll and each
+    // node lights up once the line reaches it
+    // ============================================
+    function initTimeline() {
+        const timeline = $('.timeline');
+        const fill = $('.tl-fill');
+        if (!timeline || !fill) return;
+        const items = $$('.tl-item', timeline);
+        if (prefersReduced) {
+            fill.style.transform = 'scaleY(1)';
+            items.forEach(function (item) { item.classList.add('is-lit'); });
+            return;
+        }
+        let nodeTops = [];
+        const measure = function () {
+            nodeTops = items.map(function (item) {
+                const node = item.querySelector('.tl-node');
+                return item.offsetTop + (node ? node.offsetTop + node.offsetHeight / 2 : 30);
+            });
+            requestScrollTasks();
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        if ('ResizeObserver' in window) new ResizeObserver(measure).observe(timeline);
+        scrollTasks.push(function () {
+            const rect = timeline.getBoundingClientRect();
+            const reach = window.innerHeight * 0.62 - rect.top;
+            fill.style.transform = 'scaleY(' + clamp(reach / rect.height, 0, 1).toFixed(4) + ')';
+            items.forEach(function (item, i) {
+                item.classList.toggle('is-lit', reach >= nodeTops[i]);
+            });
+        });
+    }
+
+    // ============================================
     // CAROUSELS (Owl, still used by some sections)
     // ============================================
     function initCarousels() {
@@ -814,7 +849,7 @@
     // ============================================
     [
         initReveal, initSmoothScroll, initAnchors, initNavbar, initProgress, initCursor,
-        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initCarousels,
+        initTitles, initTyping, initBook, initPubCards, initHero, initCards, initTimeline, initCarousels,
         initRipple, initFooter, initConsole
     ].forEach(function (init) {
         try {
