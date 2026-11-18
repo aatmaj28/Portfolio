@@ -5390,3 +5390,10 @@ section[tabindex="-1"]:focus {
         animation: none;
     }
 }
+
+/* The name box hugs the text, so the gradient runs across the whole name (left aligned on
+   desktop, centered on phones where the hero is a centered column) */
+.home .home-content .text-2 {
+    width: fit-content;
+    max-width: 100%;
+}

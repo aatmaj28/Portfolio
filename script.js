@@ -313,6 +313,8 @@
         };
         paintAll();
         if (document.fonts && document.fonts.ready) document.fonts.ready.then(paintAll);
+        // Web fonts can arrive after this runs; repaint so the gradient lines up with the real glyphs
+        if (document.fonts && document.fonts.addEventListener) document.fonts.addEventListener('loadingdone', paintAll);
         window.addEventListener('resize', paintAll);
         if (!('IntersectionObserver' in window)) {
             titles.forEach(function (t) { t.classList.add('is-in'); });
@@ -390,12 +392,33 @@
     // ============================================
     // HERO EFFECTS
     // ============================================
+    // Resolves true once the web font used by `el` has really loaded, or false if it has not
+    // arrived within `timeoutMs`. (The font stylesheet loads without blocking the page, so
+    // document.fonts.ready can resolve before the font has even been requested.)
+    function waitForWebFont(el, timeoutMs) {
+        if (!el || !document.fonts || !document.fonts.load) return Promise.resolve(false);
+        const cs = getComputedStyle(el);
+        const spec = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily.split(',')[0].trim();
+        const text = el.textContent.trim() || 'A';
+        const link = $$('link[rel="stylesheet"]').find(function (l) { return l.href.indexOf('fonts.googleapis.com') > -1; });
+        // The stylesheet's own onload switches media from "print" to "all", so that is the loaded signal
+        const sheetReady = (!link || link.media !== 'print') ? Promise.resolve() : new Promise(function (resolve) {
+            link.addEventListener('load', resolve, { once: true });
+            link.addEventListener('error', resolve, { once: true });
+        });
+        const loaded = sheetReady
+            .then(function () { return document.fonts.load(spec, text); })
+            .then(function (faces) { return faces.length > 0 && document.fonts.check(spec, text); })
+            .catch(function () { return false; });
+        const timeout = new Promise(function (resolve) { setTimeout(function () { resolve(false); }, timeoutMs); });
+        return Promise.race([loaded, timeout]);
+    }
+
     function initHero() {
         const hero = $('.home');
         if (!hero) return;
-        const fontsReady = (document.fonts && document.fonts.ready)
-            ? Promise.race([document.fonts.ready, new Promise(function (r) { setTimeout(r, 1500); })])
-            : Promise.resolve();
+        const nameEl = $('.home .text-2');
+        const heroFont = waitForWebFont(nameEl, 3000);
 
         // Background layers drift a little slower than the page
         const layers = $$('.home .animated-bg, .home .particles-container');
@@ -419,7 +442,7 @@
         }
 
         initConstellation(hero);
-        initNameDecode(fontsReady);
+        initNameDecode(nameEl, heroFont);
 
         // 3D parallax layers, cursor spotlight and magnetic buttons
         if (finePointer && !prefersReduced) {
@@ -456,10 +479,11 @@
             });
         }
 
-        // Stat counters: widths are locked first so counting never shifts the layout
+        // Stat counters: each number's width is held while it counts (so nothing shifts),
+        // then released once it reaches its final value
         const statNums = $$('.stat-num');
         if (statNums.length && !prefersReduced) {
-            fontsReady.then(function () {
+            heroFont.then(function () {
                 statNums.forEach(function (el) {
                     el.style.minWidth = Math.ceil(el.getBoundingClientRect().width) + 'px';
                 });
@@ -474,6 +498,7 @@
                         const eased = 1 - Math.pow(1 - p, 3);
                         el.textContent = (target * eased).toFixed(decimals) + suffix;
                         if (p < 1) requestAnimationFrame(tick);
+                        else el.style.minWidth = '';
                     };
                     requestAnimationFrame(tick);
                 };
@@ -648,56 +673,95 @@
     }
 
     // Name decode: letters scramble through random glyphs, then settle left to right.
-    // Each letter's width is fixed first, so the scramble never moves the layout.
-    function initNameDecode(fontsReady) {
-        const nameEl = $('.home .text-2');
-        if (!nameEl) return;
+    // It only starts once the real web font has loaded. Each letter's box is set to that
+    // letter's true advance in the plain text (kerning included), so the scramble never
+    // moves anything, and when it ends the spans are swapped back for the plain name.
+    // If the font is slow, the name simply stays as plain text.
+    function initNameDecode(nameEl, fontReady) {
+        if (!nameEl || prefersReduced) return;
         const nameText = nameEl.textContent.trim();
-        nameEl.setAttribute('aria-label', nameText);
-        if (prefersReduced) return;
+        let state = 'idle';
 
-        nameEl.textContent = '';
-        const chars = [];
-        nameText.split(' ').forEach(function (word, wi) {
-            if (wi) {
-                const space = document.createElement('span');
-                space.className = 'ch ch-space';
-                space.textContent = ' ';
-                space.setAttribute('aria-hidden', 'true');
-                nameEl.appendChild(space);
-                chars.push(space);
-            }
-            const wordEl = document.createElement('span');
-            wordEl.className = 'name-word';
-            wordEl.setAttribute('aria-hidden', 'true');
-            Array.from(word).forEach(function (chr) {
-                const span = document.createElement('span');
-                span.className = 'ch';
-                span.textContent = chr;
-                wordEl.appendChild(span);
-                chars.push(span);
-            });
-            nameEl.appendChild(wordEl);
-        });
-        nameEl.classList.add('split');
-
-        const finals = chars.map(function (s) { return s.textContent; });
-        const lock = function () {
-            chars.forEach(function (s) { s.style.width = ''; });
-            const widths = chars.map(function (s) { return s.getBoundingClientRect().width; });
-            chars.forEach(function (s, i) { s.style.width = widths[i] + 'px'; });
-            paintGradient(chars);
+        const finish = function () {
+            if (state === 'done') return;
+            state = 'done';
+            nameEl.classList.remove('split');
+            nameEl.removeAttribute('aria-label');
+            nameEl.textContent = nameText;
         };
-        lock();
-        window.addEventListener('resize', lock);
 
-        fontsReady.then(function () {
-            lock();
-            const glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=<>/';
+        // Advance of every letter as laid out in the plain text
+        const measure = function () {
+            nameEl.textContent = nameText;
+            const node = nameEl.firstChild;
+            const range = document.createRange();
+            const boxes = [];
+            for (let i = 0; i < nameText.length; i++) {
+                range.setStart(node, i);
+                range.setEnd(node, i + 1);
+                boxes.push(range.getBoundingClientRect());
+            }
+            return boxes.map(function (box, i) {
+                const next = boxes[i + 1];
+                return next && Math.abs(next.top - box.top) < 1 ? next.left - box.left : box.width;
+            });
+        };
+
+        const run = function () {
+            if (state !== 'idle') return;
+            state = 'running';
+            const widths = measure();
+            const chars = [];
+            let index = 0;
+            nameEl.textContent = '';
+            nameText.split(' ').forEach(function (word, wi) {
+                if (wi) {
+                    const space = document.createElement('span');
+                    space.className = 'ch ch-space';
+                    space.textContent = ' ';
+                    space.style.width = widths[index] + 'px';
+                    space.setAttribute('aria-hidden', 'true');
+                    nameEl.appendChild(space);
+                    chars.push(space);
+                    index += 1;
+                }
+                const wordEl = document.createElement('span');
+                wordEl.className = 'name-word';
+                wordEl.setAttribute('aria-hidden', 'true');
+                Array.from(word).forEach(function (chr) {
+                    const span = document.createElement('span');
+                    span.className = 'ch scrambling';
+                    span.textContent = chr;
+                    span.style.width = widths[index] + 'px';
+                    wordEl.appendChild(span);
+                    chars.push(span);
+                    index += 1;
+                });
+                nameEl.appendChild(wordEl);
+            });
+            nameEl.setAttribute('aria-label', nameText);
+            nameEl.classList.add('split');
+            paintGradient(chars);
+            // A resize would make the measured widths stale, so just show the final name
+            window.addEventListener('resize', finish, { once: true });
+
+            const finals = chars.map(function (s) { return s.textContent; });
+            // Each letter only scrambles through glyphs that fit inside its own box
+            const cs = getComputedStyle(nameEl);
+            const ctx = document.createElement('canvas').getContext('2d');
+            ctx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+            const glyphWidths = Array.from('ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#%&*+=<>/!?').map(function (g) {
+                return [g, ctx.measureText(g).width];
+            });
+            const pools = chars.map(function (s) {
+                const room = parseFloat(s.style.width) + 1;
+                const fit = glyphWidths.filter(function (g) { return g[1] <= room; }).map(function (g) { return g[0]; });
+                return fit.length ? fit : ['I', '!', '1'];
+            });
             const start = performance.now();
             let lastSwap = 0;
-            chars.forEach(function (s, i) { if (finals[i] !== ' ') s.classList.add('scrambling'); });
             const tick = function (now) {
+                if (state !== 'running') return;
                 const t = now - start;
                 let pending = false;
                 const swap = now - lastSwap > 45;
@@ -711,13 +775,17 @@
                         }
                     } else {
                         pending = true;
-                        if (swap) s.textContent = glyphs[Math.floor(Math.random() * glyphs.length)];
+                        if (swap) s.textContent = pools[i][Math.floor(Math.random() * pools[i].length)];
                     }
                 });
                 if (pending) requestAnimationFrame(tick);
-                else nameEl.classList.add('decoded');
+                else setTimeout(finish, 350);
             };
             requestAnimationFrame(tick);
+        };
+
+        fontReady.then(function (ok) {
+            if (ok) run();
         });
     }
 
