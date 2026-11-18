@@ -5342,3 +5342,51 @@ section[tabindex="-1"]:focus {
         opacity: 0;
     }
 }
+
+/* Keep the floating bitmoji fully inside the hero on mid-size screens */
+@media (min-width: 948px) and (max-width: 1340px) {
+    .bitmoji-static {
+        right: 24px;
+    }
+}
+
+/* ============================================
+   REDESIGN 2026: KEYBOARD AND MOTION DETAILS
+   ============================================ */
+
+/* Skip link: hidden until a keyboard user tabs to it */
+.skip-link {
+    position: fixed;
+    top: 12px;
+    left: 12px;
+    z-index: 10003;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: var(--gradient-button);
+    color: #fff;
+    font-weight: 600;
+    transform: translateY(-160%);
+    transition: transform 0.25s var(--ease-out);
+}
+
+.skip-link:focus,
+.skip-link:focus-visible {
+    transform: none;
+}
+
+/* Back to top stays out of the tab order while it is invisible */
+.scroll-up-btn {
+    visibility: hidden;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s linear 0.3s;
+}
+
+.scroll-up-btn.show {
+    visibility: visible;
+    transition: opacity 0.3s ease, transform 0.3s ease, visibility 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .aurora span:nth-child(n) {
+        animation: none;
+    }
+}
